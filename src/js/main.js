@@ -59,16 +59,23 @@ function initStartScreen() {
   browserUI.initBrowserUI();
   browserUI.setTabs([{ label: 'Ghost in Your Browser', active: true, favicon: 'ghost' }]);
   browserUI.setUrl('https://ghost.browser');
+  browserUI.hideFindBar();
   document.addEventListener('keydown', handleStartKey);
 }
 
 function handleStartKey(e) {
   if (currentView !== 'start') return;
   
+  // Require Cmd/Ctrl for the start menu shortcuts
+  if (!e.metaKey && !e.ctrlKey) return;
+
   let actId = null;
-  if (e.key === '1') actId = 'act1';
-  else if (e.key === '2') actId = 'act2';
-  else if (e.key === '3') actId = 'act3';
+  const key = e.key.toLowerCase();
+  
+  if (key === 'b') actId = 'act1';
+  else if (key === 'e') actId = 'act2';
+  else if (key === 'i') actId = 'act3';
+  else if (key === 'o') actId = 'act4';
   
   if (actId) {
     e.preventDefault();
@@ -129,6 +136,7 @@ function populateWinScreen(stats) {
   // Set win tab state
   browserUI.setTabs([{ label: 'Mission Complete', active: true, favicon: 'trophy' }]);
   browserUI.setUrl('https://ghost.browser/victory');
+  browserUI.hideFindBar();
 
   // Time
   const seconds = Math.floor(stats.timeMs / 1000);

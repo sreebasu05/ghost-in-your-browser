@@ -49,27 +49,61 @@
         <svg class="icon-profile incognito-profile hidden" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v4.5"></path><path d="M12 10.5v8"></path><circle cx="7" cy="14" r="3.5"></circle><circle cx="17" cy="14" r="3.5"></circle><path d="M10.5 14h3"></path><path d="M2 10.5h20"></path></svg>
       </div>
     </div>
-    <div class="browser-content" id="game-content-viewport">
+    <div class="browser-body">
+      <div class="browser-content" id="game-content-viewport">
       
       <!-- VIEW: START -->
       <div id="view-start" class="view-panel">
         <div class="start-content">
-          <div class="live-monitor-badge">LIVE MONITOR</div>
-          <h1 class="start-title"><span class="cmd-prompt">$</span> ghost in your browser</h1>
-          <p class="start-tagline">Rogue process detected. Click it to terminate.</p>
-          <div class="diagnostic-logs">
-            <p class="diag-line">> Scanning memory allocation...</p>
-            <p class="diag-line diagnostic-highlight">> 1 ghost detected in rendering pipeline</p>
-            <p class="diag-line">> Status: <span class="status-haunting">HAUNTING</span></p>
-            <p class="diag-line">> Action required: Manual exorcism</p>
+          <div class="start-header">
+            <div class="live-monitor-badge">LIVE MONITOR</div>
+            <h1 class="start-title"><span class="cmd-prompt">$</span> ghost in your browser</h1>
+            <p class="start-tagline">A rogue process has hijacked your mouse. Use keyboard shortcuts to hunt it down.</p>
           </div>
+
+          <div class="diagnostic-logs">
+            <p class="diag-line"><span class="diag-prefix">&gt;</span> Scanning memory allocation...</p>
+            <p class="diag-line diagnostic-highlight"><span class="diag-prefix">&gt;</span> 1 ghost detected in rendering pipeline</p>
+            <p class="diag-line"><span class="diag-prefix">&gt;</span> Status: <span class="status-haunting">HAUNTING</span></p>
+            <p class="diag-line"><span class="diag-prefix">&gt;</span> Action required: <span class="diag-action">Manual exorcism</span></p>
+          </div>
+
           <div class="act-menu">
-            <p class="act-menu-title">Select Operation:</p>
-            <ul class="act-menu-list">
-              <li><kbd>1</kbd> Browser Basics</li>
-              <li><kbd>2</kbd> Tab Warfare</li>
-              <li><kbd>3</kbd> Navigation & Windows</li>
-            </ul>
+            <p class="act-menu-label">SELECT OPERATION</p>
+            <div class="act-grid">
+              <div class="act-box" data-act="1">
+                <div class="act-box-header">
+                  <span class="act-number">01</span>
+                  <span class="act-box-title">Browser Basics</span>
+                </div>
+                <p class="act-box-desc">New tabs, reload, find, scroll</p>
+                <p class="start-instruction">⌘ + B</p>
+              </div>
+              <div class="act-box" data-act="2">
+                <div class="act-box-header">
+                  <span class="act-number">02</span>
+                  <span class="act-box-title">Tab Warfare</span>
+                </div>
+                <p class="act-box-desc">Navigate, jump, reopen tabs</p>
+                <p class="start-instruction">⌘ + E</p>
+              </div>
+              <div class="act-box" data-act="3">
+                <div class="act-box-header">
+                  <span class="act-number">03</span>
+                  <span class="act-box-title">Nav &amp; Windows</span>
+                </div>
+                <p class="act-box-desc">History, windows, incognito</p>
+                <p class="start-instruction">⌘ + I</p>
+              </div>
+              <div class="act-box" data-act="4">
+                <div class="act-box-header">
+                  <span class="act-number">04</span>
+                  <span class="act-box-title">Page Mastery</span>
+                </div>
+                <p class="act-box-desc">Zoom, reload, bookmark, print</p>
+                <p class="start-instruction">⌘ + O</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -119,6 +153,26 @@
         </div>
       </div>
 
+      </div>
+      
+      <!-- DEVTOOLS PANEL -->
+      <div class="devtools-panel" id="devtools-panel">
+        <div class="devtools-header">
+          <div class="devtools-tabs">
+            <span class="devtools-tab">Elements</span>
+            <span class="devtools-tab active">Console</span>
+            <span class="devtools-tab">Sources</span>
+            <span class="devtools-tab">Network</span>
+          </div>
+        </div>
+        <div class="devtools-logs" id="devtools-logs">
+          <!-- Logs injected here -->
+          <div class="devtools-log-entry info">
+            <span class="log-time">00:00:00.000</span>
+            <span class="log-msg">Ghost detection scanner active. Monitoring keystrokes...</span>
+          </div>
+        </div>
+      </div>
     </div>
     
     <div class="find-bar hidden" id="game-find-bar">
@@ -127,7 +181,7 @@
       <span class="find-count">1 of 1</span>
     </div>
     <div class="challenge-bar hidden" id="challenge-bar">
-      <div class="challenge-instruction-container">
+      <div class="challenge-instruction-container hidden">
         <p class="challenge-text" id="challenge-text"></p>
         <p class="challenge-subtext hidden" id="challenge-subtext"></p>
       </div>
@@ -164,11 +218,7 @@
     <p class="hint-text" id="hint-text"></p>
   </div>
 
-  <div class="reinforcement hidden" id="reinforcement">
-    <span class="reinforcement-check">✓</span>
-    <span class="reinforcement-keys" id="reinforcement-keys"></span>
-    <span class="reinforcement-action" id="reinforcement-action"></span>
-  </div>
+
 
   <div class="mouse-spooked hidden" id="mouse-spooked">Mouse is spooked!</div>
 

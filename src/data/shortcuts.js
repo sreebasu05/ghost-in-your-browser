@@ -51,7 +51,7 @@ export const SHORTCUTS = [
     frequency: 'daily',
     interceptable: 'simulate',
     keys: {
-      mac: { mods: ['ctrl'], key: 't', display: '⌘ + T' },
+      mac: { mods: ['meta'], key: 't', display: '⌘ + T' },
       win: { mods: ['ctrl'], key: 't', display: 'Ctrl + T' },
     },
     story: 'The {creature} locked your current tab. Open a new one to get around it.',
@@ -70,7 +70,7 @@ export const SHORTCUTS = [
     frequency: 'daily',
     interceptable: 'simulate',
     keys: {
-      mac: { mods: ['ctrl'], key: 'w', display: '⌘ + W' },
+      mac: { mods: ['meta'], key: 'w', display: '⌘ + W' },
       win: { mods: ['ctrl'], key: 'w', display: 'Ctrl + W' },
     },
     story: 'The {creature} infested this tab. Shut it down!',
@@ -205,7 +205,7 @@ export const SHORTCUTS = [
     frequency: 'daily',
     interceptable: 'simulate',
     keys: {
-      mac: { mods: ['ctrl', 'shift'], key: 't', display: '⌘ + Shift + T' },
+      mac: { mods: ['meta', 'shift'], key: 't', display: '⌘ + Shift + T' },
       win: { mods: ['ctrl', 'shift'], key: 't', display: 'Ctrl + Shift + T' },
     },
     story: 'The {creature} deleted your evidence tab! Restore it from the void.',
@@ -302,7 +302,7 @@ export const SHORTCUTS = [
     frequency: 'daily',
     interceptable: 'simulate',
     keys: {
-      mac: { mods: ['ctrl'], key: 'n', display: '⌘ + N' },
+      mac: { mods: ['meta'], key: 'n', display: '⌘ + N' },
       win: { mods: ['ctrl'], key: 'n', display: 'Ctrl + N' },
     },
     story: 'The {creature} escaped your browser. Deploy a second window to surround it.',
@@ -321,7 +321,7 @@ export const SHORTCUTS = [
     frequency: 'weekly',
     interceptable: 'simulate',
     keys: {
-      mac: { mods: ['ctrl', 'shift'], key: 'n', display: '⌘ + Shift + N' },
+      mac: { mods: ['meta', 'shift'], key: 'n', display: '⌘ + Shift + N' },
       win: { mods: ['ctrl', 'shift'], key: 'n', display: 'Ctrl + Shift + N' },
     },
     story: 'The {creature} slipped into stealth mode. Boot your own incognito window to track it.',
@@ -340,7 +340,7 @@ export const SHORTCUTS = [
     frequency: 'weekly',
     interceptable: 'simulate',
     keys: {
-      mac: { mods: ['ctrl', 'shift'], key: 'w', display: '⌘ + Shift + W' },
+      mac: { mods: ['meta', 'shift'], key: 'w', display: '⌘ + Shift + W' },
       win: { mods: ['ctrl', 'shift'], key: 'w', display: 'Ctrl + Shift + W' },
     },
     story: 'Cut off the {creature}\'s escape route. Collapse the secondary window.',

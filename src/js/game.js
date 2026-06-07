@@ -12,6 +12,7 @@ import * as browserUI from './browser-ui.js';
 import { ACT1_LEVELS, ACT1_RETRY_CHALLENGES } from './levels/act1.js';
 import { ACT2_LEVELS, ACT2_RETRY_CHALLENGES } from './levels/act2.js';
 import { ACT3_LEVELS, ACT3_RETRY_CHALLENGES } from './levels/act3.js';
+import { ACT4_LEVELS, ACT4_RETRY_CHALLENGES } from './levels/act4.js';
 
 // ==========================================
 // STATE
@@ -22,9 +23,6 @@ const state = {
   levels: [],
   currentLevelIndex: 0,
   currentShortcut: null,
-  isRetryPhase: false,
-  retryQueue: [],
-  retryChallenges: {},
 
   // Per-level
   levelStartTime: 0,
@@ -43,6 +41,7 @@ const state = {
 
   // Active state
   isActive: false,
+  isAnimating: false,
   keyHandler: null,
   mouseHandler: null,
 };
@@ -53,7 +52,7 @@ const state = {
 
 let challengeText, challengeSubtext, hintBtn, hintLabel, powerBar, powerLabel, levelIndicator;
 let hintOverlay, hintText;
-let reinforcement, reinforcementKeys, reinforcementAction;
+let devtoolsLogs;
 let mouseSpookedEl;
 
 function cacheDom() {
@@ -66,9 +65,7 @@ function cacheDom() {
   levelIndicator = document.getElementById('level-indicator');
   hintOverlay = document.getElementById('hint-overlay');
   hintText = document.getElementById('hint-text');
-  reinforcement = document.getElementById('reinforcement');
-  reinforcementKeys = document.getElementById('reinforcement-keys');
-  reinforcementAction = document.getElementById('reinforcement-action');
+  devtoolsLogs = document.getElementById('devtools-logs');
   mouseSpookedEl = document.getElementById('mouse-spooked');
 }
 
@@ -88,21 +85,17 @@ export function startAct(actId, onWin) {
 
   if (actId === 'act1') {
     state.levels = ACT1_LEVELS;
-    state.retryChallenges = ACT1_RETRY_CHALLENGES;
   } else if (actId === 'act2') {
     state.levels = ACT2_LEVELS;
-    state.retryChallenges = ACT2_RETRY_CHALLENGES;
   } else if (actId === 'act3') {
     state.levels = ACT3_LEVELS;
-    state.retryChallenges = ACT3_RETRY_CHALLENGES;
+  } else if (actId === 'act4') {
+    state.levels = ACT4_LEVELS;
   } else {
     state.levels = ACT1_LEVELS;
-    state.retryChallenges = ACT1_RETRY_CHALLENGES;
   }
 
   state.currentLevelIndex = 0;
-  state.isRetryPhase = false;
-  state.retryQueue = [];
   state.actStartTime = Date.now();
   state.mouseAttempts = 0;
   state.totalHints = 0;
@@ -149,19 +142,17 @@ export function getStats() {
 function startLevel() {
   if (!state.isActive) return;
 
-  const level = state.isRetryPhase
-    ? state.retryQueue[state.currentLevelIndex]
-    : state.levels[state.currentLevelIndex];
+  const level = state.levels[state.currentLevelIndex];
 
   if (!level) {
-    // No more levels
-    if (!state.isRetryPhase) {
-      startRetryPhase();
-    } else {
-      handleWin();
-    }
+    // No more levels - user requested no extra repeats (skip retry phase)
+    logToConsole(null, 'GHOST CAPTURED! PURGING FROM MEMORY...', 'info');
+    handleWin();
     return;
   }
+
+  // Make sure find bar is cleared
+  browserUI.hideFindBar();
 
   // Get shortcut data
   const shortcut = getShortcutById(level.shortcutId);
@@ -174,43 +165,50 @@ function startLevel() {
   // Set up the browser state
   level.setup();
 
+  state.isAnimating = false;
+
   // Update UI
   const platform = getPlatform();
-  const challengeStr = state.isRetryPhase
-    ? state.retryChallenges[level.shortcutId] || shortcut.story
-    : level.challenge;
-  challengeText.textContent = renderCreatureText(challengeStr);
+  // Log challenge instruction into the console
+  const challengeStr = level.challenge;
+  
+  logToConsole(null, `[SYSTEM] ${challengeStr}`, 'info');
 
-  const totalLevels = state.isRetryPhase ? state.retryQueue.length : state.levels.length;
-  const label = state.isRetryPhase ? 'R' : 'L';
-  levelIndicator.textContent = `${label}${state.currentLevelIndex + 1}`;
+  const totalLevels = state.levels.length;
+  levelIndicator.textContent = `${state.currentLevelIndex + 1} / ${totalLevels}`;
 
-  // Check for macOS simulated shortcut warning
-  if (challengeSubtext) {
-    const keys = shortcut.keys[platform];
-    if (platform === 'mac' && keys.mods.includes('ctrl')) {
-      challengeSubtext.textContent = `⚠️ macOS: In this one, use Ctrl instead of Cmd`;
-      challengeSubtext.classList.remove('hidden');
-    } else {
-      challengeSubtext.classList.add('hidden');
-    }
+  // Log macOS simulated shortcut warning if applicable
+  if (platform === 'mac' && shortcut.keys[platform].mods.includes('ctrl')) {
+    logToConsole(null, `[WARNING] macOS: In this one, use Ctrl instead of Cmd`, 'fail');
   }
 
   // Reset hints
   hintLabel.textContent = `Hint (${3 - state.hintsRevealed})`;
-  hintBtn.disabled = state.isRetryPhase; // No hints during retry
+  hintBtn.disabled = false;
   hintOverlay.classList.add('hidden');
 
   // Listen for keys
-  if (state.keyHandler) {
+  if (!state.keyHandler) {
+    state.keyHandler = (e) => onKeyDown(e, level);
+    document.addEventListener('keydown', state.keyHandler);
+  } else {
+    // Just update the reference if we're reusing it
     document.removeEventListener('keydown', state.keyHandler);
+    state.keyHandler = (e) => onKeyDown(e, level);
+    document.addEventListener('keydown', state.keyHandler);
   }
-  state.keyHandler = (e) => onKeyDown(e, level);
-  document.addEventListener('keydown', state.keyHandler);
 }
 
 function onKeyDown(e, level) {
   if (!state.isActive) return;
+
+  // If animating success/fail, ignore gameplay but still trap native browser shortcuts
+  if (state.isAnimating) {
+    if (e.metaKey || e.ctrlKey || e.altKey) {
+      e.preventDefault();
+    }
+    return;
+  }
 
   const shortcut = state.currentShortcut;
   const platform = getPlatform();
@@ -242,12 +240,12 @@ function onKeyDown(e, level) {
     if (level.shortcutId === 'jump_tab') {
       const nextTabKeys = getShortcutById('next_tab').keys[platform];
       if (matchesShortcut(e, nextTabKeys, 'next_tab', platform)) {
-        handleJumpTabCheat();
+        handleJumpTabCheat(e);
         return;
       }
     }
 
-    handleFail();
+    handleFail(e);
   }
 }
 
@@ -315,29 +313,26 @@ function checkModifiers(e, requiredMods) {
 async function handleSuccess(level) {
   if (!state.isActive) return;
 
-  // Remove key listener during animation
-  document.removeEventListener('keydown', state.keyHandler);
-  state.keyHandler = null;
+  // Block further inputs but keep trapping native shortcuts
+  state.isAnimating = true;
 
   // Calculate score
   const timeMs = Date.now() - state.levelStartTime;
   const score = calculateScore(timeMs, state.wrongAttempts, state.hintsUsed);
   const stars = calculateStars(state.wrongAttempts, state.hintsUsed);
 
-  // Store result (only for main levels, not retries)
-  if (!state.isRetryPhase) {
-    state.results.push({
-      shortcutId: state.currentShortcut.id,
-      score,
-      stars,
-      wrongAttempts: state.wrongAttempts,
-      hintsUsed: state.hintsUsed,
-    });
-    state.totalHints += state.hintsUsed;
-  }
+  // Store result
+  state.results.push({
+    shortcutId: state.currentShortcut.id,
+    score,
+    stars,
+    wrongAttempts: state.wrongAttempts,
+    hintsUsed: state.hintsUsed,
+  });
+  state.totalHints += state.hintsUsed;
 
-  // Drain power
-  const powerDrain = state.isRetryPhase ? 7 : 13;
+  // Drain power (spread evenly across levels)
+  const powerDrain = Math.ceil(100 / state.levels.length);
   state.power = Math.max(0, state.power - powerDrain);
   updatePower();
 
@@ -346,23 +341,21 @@ async function handleSuccess(level) {
     await level.onSuccess();
   }
 
-  // Show reinforcement flash
+  // Show success in DevTools console
   const platform = getPlatform();
-  showReinforcement(
-    state.currentShortcut.keys[platform].display,
-    state.currentShortcut.action
-  );
+  const keysStr = state.currentShortcut.keys[platform].display;
+  const actionStr = state.currentShortcut.action;
+  logToConsole(keysStr, actionStr, 'success');
 
-  // Advance to next level after delay
-  await delay(1200);
-  hideReinforcement();
+  // Advance to next level after a snappy delay
+  await delay(500);
   hintOverlay.classList.add('hidden');
 
   state.currentLevelIndex++;
   startLevel();
 }
 
-function handleFail() {
+function handleFail(e) {
   state.wrongAttempts++;
 
   // Screen shake
@@ -373,11 +366,17 @@ function handleFail() {
   // Ghost taunt
   ghost.playTaunt();
 
+  // Log to console
+  if (e) {
+    const keyCombo = formatKeyCombo(e);
+    logToConsole(keyCombo, 'Incorrect command detected', 'fail');
+  }
+
   // Auto-reveal next hint on failure
   useHint();
 }
 
-function handleJumpTabCheat() {
+function handleJumpTabCheat(e) {
   state.wrongAttempts++;
 
   // Screen shake
@@ -400,6 +399,11 @@ function handleJumpTabCheat() {
     
     const newGhostTab = browserUI.getTab(jumpTo);
     if (newGhostTab) ghost.moveTo(newGhostTab, 'on');
+  }
+
+  if (e) {
+    const keyCombo = formatKeyCombo(e);
+    logToConsole(keyCombo, 'Target moved. Re-evaluating...', 'fail');
   }
 
   useHint();
@@ -542,19 +546,53 @@ function updatePower() {
 // UI HELPERS
 // ==========================================
 
-function showReinforcement(keys, action) {
-  reinforcementKeys.textContent = keys;
-  reinforcementAction.textContent = `— ${action}`;
-  reinforcement.classList.remove('hidden');
+function logToConsole(keys, msg, type = 'info') {
+  if (!devtoolsLogs) return;
 
-  // Force re-trigger animation
-  reinforcement.style.animation = 'none';
-  reinforcement.offsetHeight;
-  reinforcement.style.animation = '';
+  const now = new Date();
+  const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}.${now.getMilliseconds().toString().padStart(3, '0')}`;
+
+  const entry = document.createElement('div');
+  entry.className = `devtools-log-entry ${type}`;
+  
+  const timeSpan = document.createElement('span');
+  timeSpan.className = 'log-time';
+  timeSpan.textContent = timeStr;
+
+  const msgSpan = document.createElement('span');
+  msgSpan.className = 'log-msg';
+  
+  if (keys) {
+    msgSpan.innerHTML = `[<span class="log-key">${keys}</span>] ${msg}`;
+  } else {
+    msgSpan.textContent = msg;
+  }
+
+  entry.appendChild(timeSpan);
+  entry.appendChild(msgSpan);
+  
+  devtoolsLogs.appendChild(entry);
+  devtoolsLogs.scrollTop = devtoolsLogs.scrollHeight;
 }
 
-function hideReinforcement() {
-  reinforcement.classList.add('hidden');
+function formatKeyCombo(e) {
+  const parts = [];
+  if (e.metaKey) parts.push('⌘');
+  if (e.ctrlKey) parts.push('Ctrl');
+  if (e.altKey) parts.push('Option');
+  if (e.shiftKey) parts.push('Shift');
+  
+  let key = e.key;
+  if (key === ' ') key = 'Space';
+  else if (key.length === 1) key = key.toUpperCase();
+  else if (key.startsWith('Arrow')) key = key.replace('Arrow', '');
+
+  // Only append if it's not a modifier itself
+  if (!['Meta', 'Control', 'Alt', 'Shift'].includes(e.key)) {
+    parts.push(key);
+  }
+
+  return parts.join(' + ');
 }
 
 // ==========================================
@@ -566,10 +604,10 @@ function handleWin() {
   stopMouseTracking();
   ghost.playCaptured();
 
-  // Delay then callback
+  // Delay to let the new burst animation finish (approx 1.5 - 2s)
   setTimeout(() => {
     if (state.onWin) state.onWin();
-  }, 1000);
+  }, 2000);
 }
 
 // ==========================================
@@ -588,62 +626,3 @@ function shuffle(arr) {
   }
   return a;
 }
-
-// ==========================================
-// NATIVE NAVIGATION TRAP (Popstate)
-// ==========================================
-
-// If the browser manages to execute native Back/Forward (e.g. via swipe or unpreventable shortcut),
-// this catches the history change (if a buffer was pushed) so the game doesn't unload.
-window.addEventListener('popstate', (e) => {
-  if (!state.isActive || !state.keyHandler) return;
-  
-  const level = state.isRetryPhase 
-    ? state.retryQueue[state.currentLevelIndex] 
-    : state.levels[state.currentLevelIndex];
-    
-  if (!level) return;
-
-  if (level.shortcutId === 'back' || level.shortcutId === 'forward') {
-    // Treat as success because they correctly triggered the browser's back/forward action!
-    handleSuccess(level);
-  } else {
-    // Navigated natively during a different challenge! Trap them again and fail.
-    window.history.pushState({ trapped: true }, '', '');
-    handleFail();
-  }
-});
-
-// ==========================================
-// UNCAPTURABLE SHORTCUT TRAP (Blur/Visibility)
-// ==========================================
-
-// Some system-level shortcuts (like Cmd+Option+Right for next_tab, or Cmd+T for new_tab)
-// do NOT fire keydown events in the browser at all. To support them, we listen for the
-// page losing focus or becoming hidden. If the current challenge requires leaving the tab,
-// we assume they successfully used the shortcut.
-function handleBlurOrHidden() {
-  if (!state.isActive || !state.keyHandler) return;
-  
-  const level = state.isRetryPhase 
-    ? state.retryQueue[state.currentLevelIndex] 
-    : state.levels[state.currentLevelIndex];
-    
-  if (!level) return;
-
-  const simulateShortcuts = [
-    'next_tab', 'prev_tab', 'new_tab', 'close_tab', 
-    'new_window', 'incognito', 'close_window'
-  ];
-
-  if (simulateShortcuts.includes(level.shortcutId)) {
-    handleSuccess(level);
-  }
-}
-
-window.addEventListener('blur', handleBlurOrHidden);
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') {
-    handleBlurOrHidden();
-  }
-});
