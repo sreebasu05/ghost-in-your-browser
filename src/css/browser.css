@@ -235,6 +235,22 @@
   white-space: nowrap;
 }
 
+/* --- Profile Icon --- */
+.browser-profile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+
+.browser-profile.incognito {
+  color: #a8c7fa; /* Incognito blue accent */
+}
+
 /* --- Content Area --- */
 .browser-content {
   background: var(--bg-content);
@@ -256,7 +272,7 @@
   overflow: hidden;
 }
 
-#view-game {
+#view-game, #view-win {
   overflow-y: auto;
   overflow-x: hidden;
 }
@@ -411,4 +427,43 @@
 .find-count {
   color: var(--text-muted);
   margin-left: auto;
+}
+
+/* --- Window Slide Transitions --- */
+.slide-window-out {
+  animation: slide-left-out 0.5s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+}
+
+.slide-window-in {
+  animation: slide-right-in 0.5s cubic-bezier(0.7, 0, 0.3, 1) forwards;
+}
+
+@keyframes slide-left-out {
+  0% { transform: translateX(0) scale(1); opacity: 1; }
+  100% { transform: translateX(-120%) scale(0.95); opacity: 0; }
+}
+
+@keyframes slide-right-in {
+  0% { transform: translateX(120%) scale(0.95); opacity: 0; }
+  100% { transform: translateX(0) scale(1); opacity: 1; }
+}
+
+/* --- Incognito Mode --- */
+.fake-browser.incognito-mode .browser-titlebar {
+  background: #121212;
+}
+.fake-browser.incognito-mode .browser-toolbar {
+  background: #202124;
+}
+.fake-browser.incognito-mode .tab.active {
+  background: #202124;
+}
+.fake-browser.incognito-mode .tab {
+  background: #121212;
+}
+.fake-browser.incognito-mode .address-bar {
+  background: #28292c;
+}
+.fake-browser.incognito-mode .browser-content {
+  background: #1a1a1a;
 }

@@ -10,6 +10,8 @@ import { calculateScore, calculateStars, renderStars } from './scoring.js';
 import * as ghost from './ghost.js';
 import * as browserUI from './browser-ui.js';
 import { ACT1_LEVELS, ACT1_RETRY_CHALLENGES } from './levels/act1.js';
+import { ACT2_LEVELS, ACT2_RETRY_CHALLENGES } from './levels/act2.js';
+import { ACT3_LEVELS, ACT3_RETRY_CHALLENGES } from './levels/act3.js';
 
 // ==========================================
 // STATE
@@ -22,6 +24,7 @@ const state = {
   currentShortcut: null,
   isRetryPhase: false,
   retryQueue: [],
+  retryChallenges: {},
 
   // Per-level
   levelStartTime: 0,
@@ -74,15 +77,29 @@ function cacheDom() {
 // ==========================================
 
 /**
- * Initialize and start Act 1.
+ * Initialize and start an Act.
+ * @param {string} actId - 'act1', 'act2', 'act3'
  * @param {Function} onWin - Called when the act is completed.
  */
-export function startAct1(onWin) {
+export function startAct(actId, onWin) {
   cacheDom();
   browserUI.initBrowserUI();
   ghost.initGhost(document.getElementById('ghost'));
 
-  state.levels = ACT1_LEVELS;
+  if (actId === 'act1') {
+    state.levels = ACT1_LEVELS;
+    state.retryChallenges = ACT1_RETRY_CHALLENGES;
+  } else if (actId === 'act2') {
+    state.levels = ACT2_LEVELS;
+    state.retryChallenges = ACT2_RETRY_CHALLENGES;
+  } else if (actId === 'act3') {
+    state.levels = ACT3_LEVELS;
+    state.retryChallenges = ACT3_RETRY_CHALLENGES;
+  } else {
+    state.levels = ACT1_LEVELS;
+    state.retryChallenges = ACT1_RETRY_CHALLENGES;
+  }
+
   state.currentLevelIndex = 0;
   state.isRetryPhase = false;
   state.retryQueue = [];
@@ -121,7 +138,7 @@ export function getStats() {
     totalHints: state.totalHints,
     results: state.results,
     totalScore: state.results.reduce((sum, r) => sum + r.score, 0),
-    maxScore: state.results.length * 150,
+    maxScore: state.results.length * 175,
   };
 }
 
@@ -160,7 +177,7 @@ function startLevel() {
   // Update UI
   const platform = getPlatform();
   const challengeStr = state.isRetryPhase
-    ? ACT1_RETRY_CHALLENGES[level.shortcutId] || shortcut.story
+    ? state.retryChallenges[level.shortcutId] || shortcut.story
     : level.challenge;
   challengeText.textContent = renderCreatureText(challengeStr);
 
@@ -207,7 +224,7 @@ function onKeyDown(e, level) {
   }
 
   // Check if the pressed key matches
-  if (matchesShortcut(e, keys)) {
+  if (matchesShortcut(e, keys, level.shortcutId, platform)) {
     e.preventDefault();
     handleSuccess(level);
   } else {
@@ -220,13 +237,43 @@ function onKeyDown(e, level) {
     if (e.metaKey || e.ctrlKey || e.altKey) {
       e.preventDefault();
     }
+    
+    // CUSTOM FAIL LOGIC for jump_tab cheat
+    if (level.shortcutId === 'jump_tab') {
+      const nextTabKeys = getShortcutById('next_tab').keys[platform];
+      if (matchesShortcut(e, nextTabKeys, 'next_tab', platform)) {
+        handleJumpTabCheat();
+        return;
+      }
+    }
+
     handleFail();
   }
 }
 
-function matchesShortcut(e, keys) {
+function matchesShortcut(e, keys, shortcutId, platform) {
   // Normalize key comparison
   const pressedKey = e.key.toLowerCase();
+  
+  // Custom aliases for unpreventable/system-level shortcuts
+  if (platform === 'mac') {
+    if (shortcutId === 'next_tab') {
+      if (pressedKey === 'tab' && e.ctrlKey && !e.shiftKey && !e.metaKey && !e.altKey) return true;
+      if ((pressedKey === ']' || pressedKey === '}') && e.metaKey && e.shiftKey && !e.ctrlKey && !e.altKey) return true;
+    }
+    if (shortcutId === 'prev_tab') {
+      if (pressedKey === 'tab' && e.ctrlKey && e.shiftKey && !e.metaKey && !e.altKey) return true;
+      if ((pressedKey === '[' || pressedKey === '{') && e.metaKey && e.shiftKey && !e.ctrlKey && !e.altKey) return true;
+    }
+  } else if (platform === 'win') {
+    if (shortcutId === 'next_tab') {
+      if (pressedKey === 'pagedown' && e.ctrlKey && !e.shiftKey && !e.metaKey && !e.altKey) return true;
+    }
+    if (shortcutId === 'prev_tab') {
+      if (pressedKey === 'pageup' && e.ctrlKey && !e.shiftKey && !e.metaKey && !e.altKey) return true;
+    }
+  }
+
   const targetKey = keys.key.toLowerCase();
 
   // Special case: Space
@@ -330,6 +377,34 @@ function handleFail() {
   useHint();
 }
 
+function handleJumpTabCheat() {
+  state.wrongAttempts++;
+
+  // Screen shake
+  const browser = document.getElementById('game-browser');
+  browser.classList.add('screen-shake');
+  setTimeout(() => browser.classList.remove('screen-shake'), 150);
+
+  // Ghost taunts and jumps away
+  ghost.playTaunt();
+  
+  // Ghost jumps to a random tab to annoy player
+  const currentGhostTab = document.querySelector('.tab.infected');
+  const allTabs = document.querySelectorAll('.tab');
+  if (currentGhostTab && allTabs.length > 0) {
+    const currentIndex = parseInt(currentGhostTab.dataset.index || '4');
+    const jumpTo = (currentIndex + 2) % allTabs.length;
+    
+    currentGhostTab.classList.remove('infected');
+    browserUI.infectTab(jumpTo);
+    
+    const newGhostTab = browserUI.getTab(jumpTo);
+    if (newGhostTab) ghost.moveTo(newGhostTab, 'on');
+  }
+
+  useHint();
+}
+
 // ==========================================
 // HINTS
 // ==========================================
@@ -391,7 +466,7 @@ function startRetryPhase() {
     const originalLevel = state.levels.find(l => l.shortcutId === id);
     return {
       shortcutId: id,
-      challenge: ACT1_RETRY_CHALLENGES[id] || originalLevel.challenge,
+      challenge: state.retryChallenges[id] || originalLevel.challenge,
       setup: originalLevel.setup.bind(originalLevel),
       onSuccess: originalLevel.onSuccess.bind(originalLevel),
     };
@@ -513,3 +588,62 @@ function shuffle(arr) {
   }
   return a;
 }
+
+// ==========================================
+// NATIVE NAVIGATION TRAP (Popstate)
+// ==========================================
+
+// If the browser manages to execute native Back/Forward (e.g. via swipe or unpreventable shortcut),
+// this catches the history change (if a buffer was pushed) so the game doesn't unload.
+window.addEventListener('popstate', (e) => {
+  if (!state.isActive || !state.keyHandler) return;
+  
+  const level = state.isRetryPhase 
+    ? state.retryQueue[state.currentLevelIndex] 
+    : state.levels[state.currentLevelIndex];
+    
+  if (!level) return;
+
+  if (level.shortcutId === 'back' || level.shortcutId === 'forward') {
+    // Treat as success because they correctly triggered the browser's back/forward action!
+    handleSuccess(level);
+  } else {
+    // Navigated natively during a different challenge! Trap them again and fail.
+    window.history.pushState({ trapped: true }, '', '');
+    handleFail();
+  }
+});
+
+// ==========================================
+// UNCAPTURABLE SHORTCUT TRAP (Blur/Visibility)
+// ==========================================
+
+// Some system-level shortcuts (like Cmd+Option+Right for next_tab, or Cmd+T for new_tab)
+// do NOT fire keydown events in the browser at all. To support them, we listen for the
+// page losing focus or becoming hidden. If the current challenge requires leaving the tab,
+// we assume they successfully used the shortcut.
+function handleBlurOrHidden() {
+  if (!state.isActive || !state.keyHandler) return;
+  
+  const level = state.isRetryPhase 
+    ? state.retryQueue[state.currentLevelIndex] 
+    : state.levels[state.currentLevelIndex];
+    
+  if (!level) return;
+
+  const simulateShortcuts = [
+    'next_tab', 'prev_tab', 'new_tab', 'close_tab', 
+    'new_window', 'incognito', 'close_window'
+  ];
+
+  if (simulateShortcuts.includes(level.shortcutId)) {
+    handleSuccess(level);
+  }
+}
+
+window.addEventListener('blur', handleBlurOrHidden);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    handleBlurOrHidden();
+  }
+});

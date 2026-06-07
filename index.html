@@ -44,6 +44,10 @@
         </span>
         <span class="url-text" id="game-url-text">https://ghost.browser</span>
       </div>
+      <div class="browser-profile" id="browser-profile">
+        <svg class="icon-profile normal-profile" viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"></path></svg>
+        <svg class="icon-profile incognito-profile hidden" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v4.5"></path><path d="M12 10.5v8"></path><circle cx="7" cy="14" r="3.5"></circle><circle cx="17" cy="14" r="3.5"></circle><path d="M10.5 14h3"></path><path d="M2 10.5h20"></path></svg>
+      </div>
     </div>
     <div class="browser-content" id="game-content-viewport">
       
@@ -59,27 +63,20 @@
             <p class="diag-line">> Status: <span class="status-haunting">HAUNTING</span></p>
             <p class="diag-line">> Action required: Manual exorcism</p>
           </div>
-          <p class="start-cta">Press <kbd>Enter</kbd> to start</p>
+          <div class="act-menu">
+            <p class="act-menu-title">Select Operation:</p>
+            <ul class="act-menu-list">
+              <li><kbd>1</kbd> Browser Basics</li>
+              <li><kbd>2</kbd> Tab Warfare</li>
+              <li><kbd>3</kbd> Navigation & Windows</li>
+            </ul>
+          </div>
         </div>
       </div>
 
       <!-- VIEW: GAMEPLAY LEVEL -->
       <div id="view-game" class="view-panel hidden">
         <!-- Level content inserted dynamically here -->
-      </div>
-
-      <!-- VIEW: DISRUPTION -->
-      <div id="view-disruption" class="view-panel hidden">
-        <div class="disruption-content">
-          <div class="disruption-cursor-wrapper">
-            <div class="disruption-cursor">
-              <svg class="icon-cursor" viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"></path></svg>
-            </div>
-          </div>
-          <p class="disruption-text">Your mouse connection is <span class="spooked-text">spooked</span>.</p>
-          <p class="disruption-sub">Use your keyboard to survive.</p>
-          <div class="mouse-status-badge">🔌 Mouse disconnected</div>
-        </div>
       </div>
 
       <!-- VIEW: WIN -->
@@ -174,6 +171,11 @@
   </div>
 
   <div class="mouse-spooked hidden" id="mouse-spooked">Mouse is spooked!</div>
+
+  <div class="real-browser-cursor hidden" id="real-browser-cursor">
+    <svg class="icon-cursor" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill-rule="evenodd" clip-rule="evenodd"><path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z"></path></svg>
+  </div>
+  <div class="real-mouse-badge hidden" id="real-mouse-badge">🔌 Mouse disconnected</div>
 
   <script type="module" src="/src/js/main.js"></script>
 </body>

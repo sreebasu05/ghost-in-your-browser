@@ -11,6 +11,34 @@
 import * as browserUI from '../browser-ui.js';
 import * as ghost from '../ghost.js';
 
+const START_CONTENT_HTML = `
+  <div class="start-content">
+    <div class="live-monitor-badge">LIVE MONITOR</div>
+    <h1 class="start-title"><span class="cmd-prompt">$</span> ghost in your browser</h1>
+    <p class="start-tagline">Rogue process detected. Click it to terminate.</p>
+    <div class="diagnostic-logs">
+      <p class="diag-line">> Scanning memory allocation...</p>
+      <p class="diag-line diagnostic-highlight">> 1 ghost detected in rendering pipeline</p>
+      <p class="diag-line">> Status: <span class="status-haunting">HAUNTING</span></p>
+      <p class="diag-line">> Action required: Manual exorcism</p>
+    </div>
+  </div>
+`;
+
+const CORRUPTED_CONTENT_HTML = `
+  <div class="start-content">
+    <div class="live-monitor-badge" style="color:var(--color-error);text-shadow:0 0 10px rgba(248,113,113,0.4);">LI░E M█NIT▓R</div>
+    <h1 class="start-title" style="color:var(--color-error);"><span class="cmd-prompt" style="color:var(--color-error);">$</span> gh░st in y▓ur br█wser</h1>
+    <p class="start-tagline" style="color:var(--color-error);">R░g█e pr█ce▒s det▓ct█d. C░i█k to t█rmin▓te.</p>
+    <div class="diagnostic-logs" style="border-color:rgba(248,113,113,0.25);background:rgba(248,113,113,0.03);color:var(--color-error);">
+      <p class="diag-line">> Sc▒nni█g mem░ry alloc█tion...</p>
+      <p class="diag-line">> FA█T█L ERR░R: GH░ST_0x8B5CF6</p>
+      <p class="diag-line">> Status: <span style="color:var(--color-error);font-weight:700;text-shadow:0 0 8px rgba(248,113,113,0.4);">CORRUPTED</span></p>
+      <p class="diag-line">> Action required: SYS█EM RE░OAD</p>
+    </div>
+  </div>
+`;
+
 /**
  * Level configs for Act 1.
  * Each level's onSuccess sets up the visual state for the NEXT level's premise.
@@ -21,25 +49,29 @@ export const ACT1_LEVELS = [
   // ─────────────────────────────────────────────
   {
     shortcutId: 'new_tab',
-    challenge: 'Your tab is locked. Open a new one.',
+    challenge: 'The tab is corrupted. Open a new tab.',
     setup() {
+      // Look exactly like landing page
       browserUI.setTabs([
-        { label: 'Locked Tab', active: true, favicon: '🔒' },
+        { label: 'Ghost in Your Browser', active: true, favicon: 'ghost' },
       ]);
-      browserUI.setUrl('https://ghost.browser/locked');
-      browserUI.setContent('<div style="display:flex;align-items:center;justify-content:center;height:100%;opacity:0.3;"><p style="font-size:18px;color:var(--color-error);">SYSTEM LOCKED</p></div>');
-      browserUI.lockContent();
-
-      // Ghost sits on the active tab
+      browserUI.setUrl('https://ghost.browser');
+      browserUI.setContent(START_CONTENT_HTML);
+      
+      // Ghost fades in on the tab
+      ghost.setState('hidden');
       const tab = browserUI.getTab(0);
       if (tab) ghost.moveTo(tab, 'on');
-      ghost.setState('idle');
+      
+      setTimeout(() => {
+        ghost.show();
+        ghost.setState('idle');
+        browserUI.infectTab(0);
+      }, 500);
     },
     async onSuccess() {
       // New tab slides in
       const newTab = browserUI.addTab('New Tab', true);
-      browserUI.unlockContent();
-      browserUI.setContent('');
       browserUI.setUrl('https://ghost.browser/new-tab');
       await ghost.playHit();
 
@@ -49,40 +81,49 @@ export const ACT1_LEVELS = [
       ghost.moveTo(newTab, 'on');
       await delay(300);
 
-      // Infect the new tab
-      browserUI.infectTab(1);
+      // New tab loads the landing page
+      browserUI.setContent(START_CONTENT_HTML);
+      browserUI.setUrl('https://ghost.browser');
+      
+      // Ghost jumps to content area and corrupts it
+      const content = document.getElementById('view-game');
+      ghost.moveTo(content, 'on');
+      await delay(400);
+      browserUI.setContent(CORRUPTED_CONTENT_HTML);
+      browserUI.showStatic();
       ghost.setState('idle');
     },
   },
 
   // ─────────────────────────────────────────────
-  // Level 2: ⌘+W — Close Tab
+  // Level 2: ⌘+R — Reload
   // ─────────────────────────────────────────────
   {
-    shortcutId: 'close_tab',
-    challenge: 'It followed you. Close this tab.',
+    shortcutId: 'reload',
+    challenge: 'Page corrupted. Reload.',
     setup() {
-      // State from L1 success: 2 tabs, ghost on Tab 2 (active, infected), Tab 1 clean
+      // State from L1 success
       browserUI.setTabs([
-        { label: 'Locked Tab', active: false, favicon: '📄' },
-        { label: 'New Tab', active: true, infected: true, favicon: '👻' },
+        { label: 'Ghost in Your Browser', active: false, infected: true, favicon: 'ghost' },
+        { label: 'New Tab', active: true, favicon: '📄' },
       ]);
-      browserUI.setUrl('https://ghost.browser/infected');
+      browserUI.setUrl('https://ghost.browser');
+      browserUI.setContent(CORRUPTED_CONTENT_HTML);
+      browserUI.showStatic();
 
-      const tab = browserUI.getTab(1);
-      if (tab) ghost.moveTo(tab, 'on');
+      const content = document.getElementById('view-game');
+      ghost.moveTo(content, 'on');
       ghost.setState('idle');
     },
     async onSuccess() {
+      browserUI.spinReload();
+      await browserUI.clearWithScanline();
       await ghost.playHit();
 
-      // Close the infected tab
-      await browserUI.removeTab(1);
-      browserUI.setUrl('https://ghost.browser');
-      browserUI.setContent('');
+      // Page is fixed
+      browserUI.setContent(START_CONTENT_HTML);
 
-      // Ghost ejected — lands in URL bar
-      await delay(200);
+      // Ghost flees to address bar
       ghost.setState('flee');
       const addressBar = document.getElementById('game-address-bar');
       ghost.moveTo(addressBar, 'inside');
@@ -102,10 +143,11 @@ export const ACT1_LEVELS = [
     challenge: "It's in the URL. Focus the address bar.",
     setup() {
       browserUI.setTabs([
-        { label: 'Locked Tab', active: true, favicon: '📄' },
+        { label: 'Ghost in Your Browser', active: false, infected: true, favicon: 'ghost' },
+        { label: 'New Tab', active: true, favicon: '📄' },
       ]);
+      browserUI.setContent(START_CONTENT_HTML);
       browserUI.glitchUrl();
-      browserUI.setContent('');
 
       const addressBar = document.getElementById('game-address-bar');
       ghost.moveTo(addressBar, 'inside');
@@ -116,63 +158,53 @@ export const ACT1_LEVELS = [
       await browserUI.focusUrl();
       await ghost.playHit();
 
-      // Ghost panics, jumps to content area, corrupts page
+      // Ghost panics, jumps back to the Tab and infects it
       ghost.setState('flee');
-      const content = document.getElementById('view-game');
-      ghost.moveTo(content, 'on');
+      const tab = browserUI.getTab(1);
+      if (tab) ghost.moveTo(tab, 'on');
       await delay(300);
 
-      browserUI.showStatic();
+      browserUI.infectTab(1);
       ghost.setState('idle');
     },
   },
 
   // ─────────────────────────────────────────────
-  // Level 4: ⌘+R — Reload
+  // Level 4: ⌘+W — Close Tab
   // ─────────────────────────────────────────────
   {
-    shortcutId: 'reload',
-    challenge: 'Page corrupted. Reload.',
+    shortcutId: 'close_tab',
+    challenge: 'It infested the new tab! Close it.',
     setup() {
       browserUI.setTabs([
-        { label: 'Locked Tab', active: true, favicon: '📄' },
+        { label: 'Ghost in Your Browser', active: false, infected: true, favicon: 'ghost' },
+        { label: 'New Tab', active: true, infected: true, favicon: '📄' },
       ]);
       browserUI.resetUrl();
-      browserUI.setContent(`
-        <div class="start-content" style="padding:40px;opacity:0.75;user-select:none;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;min-height:580px;gap:16px;">
-          <div class="live-monitor-badge" style="color:var(--color-error);text-shadow:0 0 10px rgba(248,113,113,0.4);">LI░E M█NIT▓R</div>
-          <h1 class="start-title" style="color:var(--color-error);font-family:var(--font-mono);font-size:34px;font-weight:700;display:flex;align-items:center;gap:10px;"><span class="cmd-prompt" style="color:var(--color-error);">$</span> gh░st in y▓ur br█wser</h1>
-          <p class="start-tagline" style="color:var(--color-error);font-size:13px;font-family:var(--font-mono);text-align:center;line-height:1.6;margin-bottom:8px;">R░g█e pr█ce▒s det▓ct█d. C░i█k to t█rmin▓te.</p>
-          <div class="diagnostic-logs" style="border-color:rgba(248,113,113,0.25);background:rgba(248,113,113,0.03);color:var(--color-error);font-family:var(--font-mono);font-size:11px;padding:16px 24px;width:100%;max-width:440px;display:flex;flex-direction:column;gap:8px;align-items:flex-start;margin-bottom:12px;">
-            <p class="diag-line">> Sc▒nni█g mem░ry alloc█tion...</p>
-            <p class="diag-line">> FA█T█L ERR░R: GH░ST_0x8B5CF6</p>
-            <p class="diag-line">> Status: <span style="color:var(--color-error);font-weight:700;text-shadow:0 0 8px rgba(248,113,113,0.4);">CORRUPTED</span></p>
-            <p class="diag-line">> Action required: SYS█EM RE░OAD</p>
-          </div>
-        </div>
-      `);
-      browserUI.showStatic();
+      browserUI.setContent(START_CONTENT_HTML);
 
-      const content = document.getElementById('view-game');
-      ghost.moveTo(content, 'on');
+      const tab = browserUI.getTab(1);
+      if (tab) ghost.moveTo(tab, 'on');
       ghost.setState('idle');
     },
     async onSuccess() {
-      browserUI.spinReload();
-      await browserUI.clearWithScanline();
       await ghost.playHit();
 
-      // Ghost fled below the fold
+      // Close the infected tab
+      await browserUI.removeTab(1);
+      
+      // We are back to tab 0
       browserUI.setContent(`
         <div style="padding:24px;min-height:850px;display:flex;flex-direction:column;justify-content:space-between;">
           <div>
-            <p style="color:var(--text-content-muted);margin-bottom:12px;">System log cleared.</p>
-            <p style="color:var(--text-content-muted);">Page reloaded successfully.</p>
+            <h2 style="color:var(--text-primary);margin-bottom:12px;font-family:var(--font-mono);">Original Tab</h2>
+            <p style="color:var(--text-content-muted);">The ghost broke the layout...</p>
           </div>
           <div class="scroll-indicator" style="position:static;margin-top:auto;padding-bottom:80px;">↓ it went this way</div>
         </div>
       `);
 
+      // Ghost ejected — falls below fold
       ghost.setState('flee');
       const content = document.getElementById('view-game');
       ghost.moveTo(content, 'below');
@@ -186,17 +218,17 @@ export const ACT1_LEVELS = [
   // ─────────────────────────────────────────────
   {
     shortcutId: 'scroll_down',
-    challenge: 'It went below. Scroll down.',
+    challenge: 'It fled below. Scroll down.',
     setup() {
       browserUI.setTabs([
-        { label: 'Locked Tab', active: true, favicon: '📄' },
+        { label: 'Ghost in Your Browser', active: true, infected: true, favicon: 'ghost' },
       ]);
       browserUI.resetUrl();
       browserUI.setContent(`
         <div style="padding:24px;min-height:850px;display:flex;flex-direction:column;justify-content:space-between;">
           <div>
-            <p style="color:var(--text-content-muted);margin-bottom:12px;">System log cleared.</p>
-            <p style="color:var(--text-content-muted);">Page reloaded successfully.</p>
+            <h2 style="color:var(--text-primary);margin-bottom:12px;font-family:var(--font-mono);">Original Tab</h2>
+            <p style="color:var(--text-content-muted);">The ghost broke the layout...</p>
           </div>
           <div class="scroll-indicator" style="position:static;margin-top:auto;padding-bottom:80px;">↓ it went this way</div>
         </div>
@@ -236,7 +268,7 @@ export const ACT1_LEVELS = [
     challenge: "It's invisible. Find it.",
     setup() {
       browserUI.setTabs([
-        { label: 'Locked Tab', active: true, favicon: '📄' },
+        { label: 'Ghost in Your Browser', active: true, infected: true, favicon: 'ghost' },
       ]);
       browserUI.resetUrl();
       browserUI.hideFindBar();
@@ -281,10 +313,10 @@ export const ACT1_LEVELS = [
  * The game engine handles retry setup generically.
  */
 export const ACT1_RETRY_CHALLENGES = {
-  new_tab: 'Tab locked again!',
-  close_tab: 'It infested a tab!',
-  address_bar: "It's in the URL!",
+  new_tab: 'Tab corrupted again!',
   reload: 'Page corrupted!',
+  address_bar: "It's in the URL!",
+  close_tab: 'It infested a tab!',
   scroll_down: 'It fled below!',
   find: "It's invisible!",
 };

@@ -7,7 +7,7 @@
  * Keyboard-only navigation between screens.
  */
 
-import { startAct1, stopGame, getStats } from './game.js';
+import { startAct, stopGame, getStats } from './game.js';
 import { getPlatform, getShortcutById } from '../data/shortcuts.js';
 import { renderStars } from './scoring.js';
 import * as browserUI from './browser-ui.js';
@@ -18,7 +18,6 @@ import * as browserUI from './browser-ui.js';
 
 const views = {
   start: document.getElementById('view-start'),
-  disruption: document.getElementById('view-disruption'),
   game: document.getElementById('view-game'),
   win: document.getElementById('view-win'),
 };
@@ -28,8 +27,8 @@ const ghostEl = document.getElementById('ghost');
 let currentView = 'start';
 
 function showView(name) {
-  // Hide cursor during gameplay/disruption
-  document.body.style.cursor = (name === 'game' || name === 'disruption') ? 'none' : 'default';
+  // Hide cursor during gameplay
+  document.body.style.cursor = (name === 'game') ? 'none' : 'default';
 
   // Toggle internal browser views
   Object.keys(views).forEach(key => {
@@ -65,10 +64,16 @@ function initStartScreen() {
 
 function handleStartKey(e) {
   if (currentView !== 'start') return;
-  if (e.key === 'Enter') {
+  
+  let actId = null;
+  if (e.key === '1') actId = 'act1';
+  else if (e.key === '2') actId = 'act2';
+  else if (e.key === '3') actId = 'act3';
+  
+  if (actId) {
     e.preventDefault();
     document.removeEventListener('keydown', handleStartKey);
-    startDisruption();
+    startDisruption(actId);
   }
 }
 
@@ -76,22 +81,33 @@ function handleStartKey(e) {
 // DISRUPTION TRANSITION
 // ==========================================
 
-function startDisruption() {
-  showView('disruption');
+function startDisruption(actId) {
+  // Hide the real cursor immediately
+  document.body.style.cursor = 'none';
 
-  // After 2 seconds, start the game
+  // Spawn the fake real-browser cursor drifting away
+  const fakeCursor = document.getElementById('real-browser-cursor');
+  fakeCursor.classList.remove('hidden');
+
+  // Slide in the "Mouse disconnected" badge
+  const mouseBadge = document.getElementById('real-mouse-badge');
+  mouseBadge.classList.remove('hidden');
+
+  // After 2.5 seconds, start the game
   setTimeout(() => {
+    // Hide the drifting cursor when it finishes animating
+    fakeCursor.classList.add('hidden');
     showView('game');
-    startGame();
-  }, 2000);
+    startGame(actId);
+  }, 2500);
 }
 
 // ==========================================
 // GAME
 // ==========================================
 
-function startGame() {
-  startAct1(onGameWin);
+function startGame(actId) {
+  startAct(actId, onGameWin);
 }
 
 function onGameWin() {
