@@ -1,0 +1,137 @@
+/* ==============================================
+   BASE — Reset, Variables, Fonts, Background
+   ============================================== */
+
+/* --- Reset --- */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* --- CSS Custom Properties --- */
+:root {
+  /* Ghost — change this ONE variable to retheme the ghost */
+  --ghost-color: #B331F1;
+  --ghost-color-glow: rgba(179, 49, 241, 0.35);
+  --ghost-element-color: #ffffff;
+  --ghost-size: 30px;
+
+  /* Background */
+  --bg-app: #0e0e0e;
+  --bg-grid: rgba(255, 255, 255, 0.03);
+
+  /* Browser chrome */
+  --bg-titlebar: #1a1a1a;
+  --bg-toolbar: #222222;
+  --bg-tab-active: #2a2a2a;
+  --bg-tab-inactive: #161616;
+  --bg-tab-hover: #1f1f1f;
+  --border-chrome: #2e2e2e;
+
+  /* Content area */
+  --bg-content: #121016;
+  --text-content: #d4d4d4;
+  --text-content-muted: #666666;
+
+  /* UI text */
+  --text-primary: #f0f0f0;
+  --text-secondary: #888888;
+  --text-muted: #555555;
+
+  /* Accents */
+  --color-success: #4ade80;
+  --color-error: #f87171;
+  --color-hint: #fbbf24;
+  --color-info: #60a5fa;
+
+  /* Traffic lights */
+  --traffic-close: #ff5f57;
+  --traffic-minimize: #ffbd2e;
+  --traffic-maximize: #28c840;
+
+  /* Fonts */
+  --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+
+  /* Sizes */
+  --browser-radius: 10px;
+  --browser-max-width: 1200px;
+  --titlebar-height: 40px;
+  --toolbar-height: 38px;
+  --challenge-height: 48px;
+  --tab-height: 32px;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 300ms ease;
+  --transition-slow: 500ms ease;
+}
+
+/* --- Base Styles --- */
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-ui);
+  background: var(--bg-app);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: default;
+  padding: 16px;
+}
+
+/* Grid background is on the body, behind the browser */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--bg-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* --- Screen System --- */
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--transition-normal), visibility var(--transition-normal);
+  z-index: 1;
+}
+
+.screen.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* --- Utility --- */
+.hidden {
+  display: none !important;
+}
+
+kbd {
+  display: inline-block;
+  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+}
