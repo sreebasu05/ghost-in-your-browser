@@ -210,9 +210,7 @@ function populateWinScreen(stats) {
 
   // Mouse attempts
   const mouseEl = document.getElementById('stat-mouse');
-  mouseEl.textContent = stats.mouseAttempts > 0
-    ? `${stats.mouseAttempts} times`
-    : `0 — perfect!`;
+  mouseEl.textContent = `${stats.mouseAttempts} times`;
 
   // Hints
   document.getElementById('stat-hints').textContent = stats.totalHints.toString();

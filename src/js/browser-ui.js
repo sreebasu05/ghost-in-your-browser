@@ -65,6 +65,18 @@ export function setTabs(tabs) {
     `;
     tabStrip.appendChild(el);
   });
+
+  // Append a small plus symbol mimicking a new tab button in browser
+  const plusBtn = document.createElement('button');
+  plusBtn.className = 'tab-plus-btn';
+  plusBtn.setAttribute('aria-label', 'New Tab');
+  plusBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+  `;
+  tabStrip.appendChild(plusBtn);
 }
 
 /**
@@ -83,13 +95,19 @@ export function addTab(label, makeActive = true) {
   const el = document.createElement('div');
   el.className = 'tab adding';
   if (makeActive) el.classList.add('active');
-  el.dataset.index = tabStrip.children.length;
+  el.dataset.index = tabStrip.querySelectorAll('.tab').length;
   el.innerHTML = `
     <span class="tab-favicon">${getIconSvg('📄')}</span>
     <span class="tab-label">${label}</span>
     <span class="tab-close"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></span>
   `;
-  tabStrip.appendChild(el);
+  
+  const plusBtn = tabStrip.querySelector('.tab-plus-btn');
+  if (plusBtn) {
+    tabStrip.insertBefore(el, plusBtn);
+  } else {
+    tabStrip.appendChild(el);
+  }
 
   // Remove animation class after it plays
   setTimeout(() => el.classList.remove('adding'), 300);

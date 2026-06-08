@@ -107,24 +107,37 @@
   left: 0;
   height: 100%;
   width: var(--power-width, 100%);
-  background: var(--ghost-color);
+  background: var(--ghost-color); /* Start primary purple (#B331F1) */
   border-radius: 3px;
-  transition: width var(--transition-slow);
+  transition: var(--power-transition, width var(--transition-slow)), background-color var(--transition-normal);
 }
 
 /* Power bar color shifts as it drains */
 .power-bar.low::after {
-  background: var(--color-hint);
+  background: #D27DF8; /* Lighter purple when low */
 }
 
 .power-bar.critical::after {
-  background: var(--color-error);
-  animation: power-flicker 0.4s infinite alternate;
+  background: #F3E1FC; /* Lightest/pale purple when critical */
+  animation: power-flicker 0.2s infinite alternate; /* Flicker */
+}
+
+/* Shake animation when critical */
+.power-meter.critical {
+  animation: power-shake 0.15s infinite;
+}
+
+@keyframes power-shake {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-1px, 0.5px); }
+  50% { transform: translate(1px, -0.5px); }
+  75% { transform: translate(-0.5px, -1px); }
+  100% { transform: translate(0.5px, 1px); }
 }
 
 @keyframes power-flicker {
-  0%   { opacity: 1; }
-  100% { opacity: 0.5; }
+  0%   { opacity: 1; filter: brightness(1.2); }
+  100% { opacity: 0.3; filter: brightness(0.8); }
 }
 
 .power-label {
@@ -778,3 +791,41 @@
   50% { transform: scale(1.5); opacity: 0.8; filter: brightness(2); }
   100% { transform: scale(0); opacity: 0; filter: brightness(3); }
 }
+
+/* --- Ghostgle Purple Scaling --- */
+.gg-g { color: #6a3482 !important; }   /* Muted, dark primary purple */
+.gg-h { color: #5a2d6e !important; }   /* Dark dull purple */
+.gg-o { color: #4b235c !important; }   /* Deeper dark purple */
+.gg-s { color: #3b194a !important; }   /* Very deep dark purple */
+.gg-t { color: #421e52 !important; }   /* Right-half dark purple */
+.gg-g2 { color: #2d123b !important; }  /* Right-half extremely dark purple */
+.gg-l { color: #421e52 !important; }   /* Right-half dark purple */
+.gg-e { color: #5a2d6e !important; }   /* Right-half dark dull purple */
+
+/* Plus tab button mimicking browser UI */
+.tab-plus-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: 50%;
+  cursor: default;
+  margin-left: 6px;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  outline: none;
+}
+
+.tab-plus-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+
+
+
