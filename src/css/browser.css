@@ -615,3 +615,34 @@
   border-radius: 3px;
   color: #fff;
 }
+
+/* --- CRT Screen Curvature, Phosphor Glow & Vignette --- */
+.crt-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 99999;
+  background: 
+    radial-gradient(circle at center, transparent 60%, rgba(0, 0, 0, 0.4) 100%),
+    linear-gradient(rgba(18, 16, 22, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+    linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+  background-size: 100% 100%, 100% 4px, 6px 100%;
+  box-shadow: inset 0 0 80px rgba(179, 49, 241, 0.12);
+  opacity: 0.85;
+  animation: crt-flicker 0.15s infinite;
+}
+
+.crt-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(179, 49, 241, 0.05) 0%, transparent 70%);
+  opacity: 0.6;
+}
+
+@keyframes crt-flicker {
+  0% { opacity: 0.82; }
+  50% { opacity: 0.85; }
+  100% { opacity: 0.83; }
+}
+

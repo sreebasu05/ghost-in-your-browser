@@ -65,14 +65,29 @@ function initStartScreen() {
   const devtoolsLogs = document.getElementById('devtools-logs');
   if (devtoolsLogs) devtoolsLogs.innerHTML = '';
   
+  // Initialize and run the background diagnostic binary/hex log stream
+  initDiagnosticStream();
+
   // Start ghost screensaver
   ghost.initGhost(document.getElementById('ghost'));
   ghost.show();
   ghost.setState('screensaver');
 
   updateActLockStates();
+  checkMobileUserAgent();
 
   document.addEventListener('keydown', handleStartKey);
+}
+
+function checkMobileUserAgent() {
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+                   || (navigator.maxTouchPoints && navigator.maxTouchPoints > 2);
+  if (isMobile) {
+    const guidelinesText = document.querySelector('.guidelines-text');
+    if (guidelinesText) {
+      guidelinesText.innerHTML = '<strong>This game requires a keyboard.</strong> Please open this page on a desktop computer to play.';
+    }
+  }
 }
 
 const actShortcuts = {
@@ -379,7 +394,37 @@ function resetToStart() {
 }
 
 // ==========================================
-// INIT
+// BACKGROUND DIAGNOSTIC BINARY STREAM
 // ==========================================
 
+let streamIntervalId = null;
+function initDiagnosticStream() {
+  const container = document.getElementById('diag-stream-bg');
+  if (!container) return;
+
+  if (streamIntervalId) {
+    clearInterval(streamIntervalId);
+  }
+
+  // Pre-fill container
+  let content = '';
+  const chars = '0123456789ABCDEF ';
+  for (let i = 0; i < 400; i++) {
+    content += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  container.textContent = content;
+
+  // Slowly roll the stream
+  streamIntervalId = setInterval(() => {
+    if (currentView !== 'start') return;
+    let current = container.textContent;
+    let newChars = '';
+    for (let i = 0; i < 8; i++) {
+      newChars += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    container.textContent = (newChars + current).substring(0, 450);
+  }, 150);
+}
+
 initStartScreen();
+

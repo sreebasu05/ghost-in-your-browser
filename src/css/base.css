@@ -66,6 +66,11 @@
   --transition-fast: 150ms ease;
   --transition-normal: 300ms ease;
   --transition-slow: 500ms ease;
+
+  /* Premium Cyber Aesthetic Extras */
+  --grid-line-color: rgba(179, 49, 241, 0.04);
+  --grid-accent-color: rgba(179, 49, 241, 0.08);
+  --crt-glow: rgba(179, 49, 241, 0.05);
 }
 
 /* --- Base Styles --- */
