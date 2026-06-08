@@ -61,6 +61,7 @@ export function setTabs(tabs) {
     el.innerHTML = `
       <span class="tab-favicon">${getIconSvg(tab.favicon)}</span>
       <span class="tab-label">${tab.label}</span>
+      <span class="tab-close"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></span>
     `;
     tabStrip.appendChild(el);
   });
@@ -86,6 +87,7 @@ export function addTab(label, makeActive = true) {
   el.innerHTML = `
     <span class="tab-favicon">${getIconSvg('📄')}</span>
     <span class="tab-label">${label}</span>
+    <span class="tab-close"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></span>
   `;
   tabStrip.appendChild(el);
 
@@ -245,7 +247,7 @@ export function clearWithScanline() {
 export function scrollContent() {
   return new Promise(resolve => {
     contentArea.scrollTo({
-      top: 220,
+      top: contentArea.scrollHeight,
       behavior: 'smooth'
     });
     setTimeout(resolve, 550);
@@ -259,6 +261,28 @@ export function spinReload() {
   if (!reloadBtn) return;
   reloadBtn.classList.add('spinning');
   setTimeout(() => reloadBtn.classList.remove('spinning'), 600);
+}
+
+/**
+ * Simulate a smooth page reload animation (fade out and in).
+ * @returns {Promise<void>}
+ */
+export function niceReload() {
+  return new Promise(resolve => {
+    spinReload();
+    contentArea.style.transition = 'opacity 0.2s ease';
+    contentArea.style.opacity = '0';
+    
+    setTimeout(() => {
+      // Clear static and scanline if any
+      contentArea.classList.remove('static', 'scanline', 'distorted-page');
+      contentArea.style.opacity = '1';
+      setTimeout(() => {
+        contentArea.style.transition = '';
+        resolve();
+      }, 200);
+    }, 300);
+  });
 }
 
 // ==========================================

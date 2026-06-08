@@ -24,24 +24,9 @@ const SCORING = {
 export function calculateScore(timeMs, wrongAttempts, hintsUsed) {
   let score = SCORING.BASE;
 
-  // First-try bonus
-  if (wrongAttempts === 0 && hintsUsed === 0) {
-    score += SCORING.FIRST_TRY_BONUS;
-  }
-
-  // Speed bonus
-  if (timeMs < 3000) {
-    score += SCORING.SPEED_BONUS_3S;
-  } else if (timeMs < 5000) {
-    score += SCORING.SPEED_BONUS_5S;
-  }
-
-  // Penalties
-  score -= wrongAttempts * SCORING.WRONG_ATTEMPT_PENALTY;
-
-  if (hintsUsed >= 1) score -= SCORING.HINT_1_PENALTY;
-  if (hintsUsed >= 2) score -= SCORING.HINT_2_PENALTY;
-  if (hintsUsed >= 3) score -= SCORING.HINT_3_PENALTY;
+  if (hintsUsed >= 1) score -= 30;
+  if (hintsUsed >= 2) score -= 30;
+  if (hintsUsed >= 3) score -= 30;
 
   return Math.max(score, SCORING.MIN_SCORE);
 }

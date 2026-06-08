@@ -5,7 +5,7 @@
  * This module handles moving it to browser elements and toggling animation states.
  */
 
-const ANIMATION_STATES = ['idle', 'hit', 'flee', 'taunt', 'panic', 'captured', 'hidden'];
+const ANIMATION_STATES = ['idle', 'hit', 'flee', 'taunt', 'panic', 'captured', 'hidden', 'screensaver'];
 
 let ghostEl = null;
 
@@ -48,6 +48,7 @@ export function setState(state) {
 
   // Apply new state
   ghostEl.classList.add(`ghost--${state}`);
+  ghostEl.style.transition = ''; // Clean up any inline overrides
 }
 
 /**
@@ -77,6 +78,12 @@ export function moveTo(targetEl, position = 'on') {
       // Inside the element, offset slightly from center
       top = targetRect.top - browserRect.top + (targetRect.height / 2) - (ghostEl.offsetHeight / 2);
       left = targetRect.left - browserRect.left + (targetRect.width * 0.6);
+      break;
+
+    case 'left-inside':
+      // Inside the element, but hugging the left edge (like an icon)
+      top = targetRect.top - browserRect.top + (targetRect.height / 2) - (ghostEl.offsetHeight / 2);
+      left = targetRect.left - browserRect.left + 12;
       break;
 
     case 'below':

@@ -7,10 +7,11 @@
  * Keyboard-only navigation between screens.
  */
 
-import { startAct, stopGame, getStats } from './game.js';
+import { startAct, stopGame, getStats, logToConsole } from './game.js';
 import { getPlatform, getShortcutById } from '../data/shortcuts.js';
 import { renderStars } from './scoring.js';
 import * as browserUI from './browser-ui.js';
+import * as ghost from './ghost.js';
 
 // ==========================================
 // VIEWS & OVERLAYS
@@ -61,6 +62,14 @@ function initStartScreen() {
   browserUI.setUrl('https://ghost.browser');
   browserUI.hideFindBar();
   document.getElementById('devtools-panel').classList.remove('is-open');
+  const devtoolsLogs = document.getElementById('devtools-logs');
+  if (devtoolsLogs) devtoolsLogs.innerHTML = '';
+  
+  // Start ghost screensaver
+  ghost.initGhost(document.getElementById('ghost'));
+  ghost.show();
+  ghost.setState('screensaver');
+
   document.addEventListener('keydown', handleStartKey);
 }
 
@@ -107,17 +116,55 @@ function startDisruption(actId) {
   const fakeCursor = document.getElementById('real-browser-cursor');
   fakeCursor.classList.remove('hidden');
 
-  // Slide in the "Mouse disconnected" badge
-  const mouseBadge = document.getElementById('real-mouse-badge');
-  mouseBadge.classList.remove('hidden');
+  // Open devtools panel and challenge bar smoothly right away
+  document.getElementById('devtools-panel').classList.add('is-open');
+  challengeBar.classList.remove('hidden');
 
-  // After 2.5 seconds, start the game
+  // Clear logs from previous runs and inject initial boot sequence
+  const devtoolsLogs = document.getElementById('devtools-logs');
+  if (devtoolsLogs) {
+    devtoolsLogs.innerHTML = '';
+    logToConsole(null, 'ERROR: MOUSE SPOOKED.', 'error');
+  }
+
+  // Delay the ghost's descent so the user sees the log first
   setTimeout(() => {
-    // Hide the drifting cursor when it finishes animating
-    fakeCursor.classList.add('hidden');
-    showView('game');
-    startGame(actId);
-  }, 2500);
+    if (devtoolsLogs) {
+      logToConsole(null, 'Ghost detection scanner active. Monitoring keystrokes...', 'info');
+    }
+
+    // Make the screensaver ghost fly straight down
+    const ghostEl = document.getElementById('ghost');
+    if (ghostEl && ghostEl.classList.contains('ghost--screensaver')) {
+      // Get current computed position
+      const rect = ghostEl.getBoundingClientRect();
+      const parentRect = ghostEl.parentElement.getBoundingClientRect();
+      
+      // Lock it to its exact current pixel position so it doesn't snap
+      ghostEl.style.left = (rect.left - parentRect.left) + 'px';
+      ghostEl.style.top = (rect.top - parentRect.top) + 'px';
+      ghostEl.style.transform = 'none';
+      
+      // Remove screensaver animation
+      ghostEl.classList.remove('ghost--screensaver');
+      
+      // Force a reflow
+      void ghostEl.offsetWidth;
+      
+      // Now smoothly translate it way down
+      ghostEl.style.transition = 'top 2.5s ease-in-out, left 2.5s ease-in-out';
+      ghostEl.style.top = (parentRect.height + 400) + 'px'; // way below screen
+    }
+
+    // After 2.5 seconds, start the game
+    setTimeout(() => {
+      // Hide the drifting cursor when it finishes animating
+      fakeCursor.classList.add('hidden');
+      window.__savedScrollTop = document.getElementById('view-start').scrollTop;
+      showView('game');
+      startGame(actId);
+    }, 2500);
+  }, 2000); // 2-second delay for mouse drift before ghost goes down
 }
 
 // ==========================================
@@ -125,7 +172,6 @@ function startDisruption(actId) {
 // ==========================================
 
 function startGame(actId) {
-  document.getElementById('devtools-panel').classList.add('is-open');
   startAct(actId, onGameWin);
 }
 
@@ -160,8 +206,8 @@ function populateWinScreen(stats) {
   // Mouse attempts
   const mouseEl = document.getElementById('stat-mouse');
   mouseEl.textContent = stats.mouseAttempts > 0
-    ? `${stats.mouseAttempts} times 😅`
-    : `0 — perfect! 🎯`;
+    ? `${stats.mouseAttempts} times`
+    : `0 — perfect!`;
 
   // Hints
   document.getElementById('stat-hints').textContent = stats.totalHints.toString();

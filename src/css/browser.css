@@ -98,6 +98,30 @@
 .tab-label {
   overflow: hidden;
   text-overflow: ellipsis;
+  flex-grow: 1;
+}
+
+.tab-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  opacity: 0;
+  color: var(--text-secondary);
+  transition: opacity var(--transition-fast), background var(--transition-fast);
+  margin-right: -8px; /* Offset the tab's padding right */
+}
+
+.tab:hover .tab-close,
+.tab.active .tab-close {
+  opacity: 1;
+}
+
+.tab-close:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 /* Tab infected state */

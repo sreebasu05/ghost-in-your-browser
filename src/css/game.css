@@ -12,6 +12,12 @@
   min-height: var(--challenge-height);
   padding: 6px 16px;
   gap: 16px;
+  animation: challenge-bar-slide-up 0.4s ease-out forwards;
+}
+
+@keyframes challenge-bar-slide-up {
+  0% { transform: translateY(100%); }
+  100% { transform: translateY(0); }
 }
 
 .challenge-instruction-container {
@@ -601,7 +607,7 @@
 
 .win-title {
   font-family: var(--font-ui);
-  font-size: 28px;
+  font-size: 36px;
   font-weight: 700;
   color: var(--text-primary);
   margin-bottom: 4px;
@@ -620,7 +626,7 @@
 }
 .win-subtitle {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 18px;
   color: var(--color-success);
 }
 
@@ -639,8 +645,8 @@
   justify-content: space-between;
   align-items: center;
   font-family: var(--font-mono);
-  font-size: 13px;
-  padding: 6px 0;
+  font-size: 16px;
+  padding: 8px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
@@ -668,8 +674,8 @@
   align-items: center;
   gap: 10px;
   font-family: var(--font-mono);
-  font-size: 12px;
-  padding: 6px 10px;
+  font-size: 14px;
+  padding: 8px 12px;
   background: rgba(255, 255, 255, 0.02);
   border-radius: 6px;
 }
@@ -695,4 +701,46 @@
   font-size: 13px;
   color: var(--text-muted);
   animation: pulse-cta 2s ease infinite;
+}
+
+/* --- Act 1 Redesign Animations --- */
+
+.ghost--screensaver {
+  animation: ghost-screensaver 30s infinite ease-in-out;
+}
+
+@keyframes ghost-screensaver {
+  0%   { transform: translate(50vw, 15vh) scale(1) rotate(0deg); }
+  10%  { transform: translate(25vw, 30vh) scale(1.1) rotate(-10deg); }
+  20%  { transform: translate(10vw, 70vh) scale(0.9) rotate(-20deg); }
+  30%  { transform: translate(35vw, 85vh) scale(1) rotate(-5deg); }
+  40%  { transform: translate(45vw, 60vh) scale(1.15) rotate(15deg); }
+  50%  { transform: translate(75vw, 40vh) scale(0.85) rotate(25deg); }
+  60%  { transform: translate(90vw, 75vh) scale(1) rotate(10deg); }
+  70%  { transform: translate(65vw, 90vh) scale(1.1) rotate(-5deg); }
+  80%  { transform: translate(30vw, 40vh) scale(0.95) rotate(-15deg); }
+  90%  { transform: translate(70vw, 15vh) scale(1.05) rotate(5deg); }
+  100% { transform: translate(50vw, 15vh) scale(1) rotate(0deg); }
+}
+
+.distorted-page {
+  animation: page-distort 5s infinite alternate;
+}
+
+@keyframes page-distort {
+  0% { filter: blur(0px) hue-rotate(0deg) contrast(1); transform: skewX(0deg); }
+  25% { filter: blur(1px) hue-rotate(10deg) contrast(1.2); transform: skewX(1deg); }
+  50% { filter: blur(0.5px) hue-rotate(-10deg) contrast(1.5); transform: skewX(-1deg); }
+  75% { filter: blur(2px) hue-rotate(20deg) contrast(1.8); transform: skewX(2deg); }
+  100% { filter: blur(1px) hue-rotate(-20deg) contrast(2); transform: skewX(-2deg); }
+}
+
+.ghost--captured {
+  animation: ghost-poof-anim 0.8s ease-out forwards;
+}
+
+@keyframes ghost-poof-anim {
+  0% { transform: scale(1); opacity: 1; filter: brightness(1); }
+  50% { transform: scale(1.5); opacity: 0.8; filter: brightness(2); }
+  100% { transform: scale(0); opacity: 0; filter: brightness(3); }
 }

@@ -107,11 +107,6 @@ export function startAct(actId, onWin) {
   updatePower();
   startMouseTracking();
   
-  if (devtoolsLogs) {
-    devtoolsLogs.innerHTML = '';
-    logToConsole(null, 'Ghost detection scanner active. Monitoring keystrokes...', 'info');
-  }
-
   startLevel();
 }
 
@@ -137,7 +132,7 @@ export function getStats() {
     totalHints: state.totalHints,
     results: state.results,
     totalScore: state.results.reduce((sum, r) => sum + r.score, 0),
-    maxScore: state.results.length * 175,
+    maxScore: state.results.length * 100,
   };
 }
 
@@ -152,7 +147,6 @@ function startLevel() {
 
   if (!level) {
     // No more levels - user requested no extra repeats (skip retry phase)
-    logToConsole(null, 'GHOST CAPTURED! PURGING FROM MEMORY...', 'info');
     handleWin();
     return;
   }
@@ -342,16 +336,16 @@ async function handleSuccess(level) {
   state.power = Math.max(0, state.power - powerDrain);
   updatePower();
 
-  // Play level success animation
-  if (level.onSuccess) {
-    await level.onSuccess();
-  }
-
-  // Show success in DevTools console
+  // Show success in DevTools console FIRST
   const platform = getPlatform();
   const keysStr = state.currentShortcut.keys[platform].display;
   const actionStr = state.currentShortcut.action;
   logToConsole(keysStr, actionStr, 'success');
+
+  // Play level success animation
+  if (level.onSuccess) {
+    await level.onSuccess();
+  }
 
   // Advance to next level after a snappy delay
   await delay(500);
@@ -500,7 +494,7 @@ function startMouseTracking() {
   document.addEventListener('mousemove', state.mouseHandler);
 }
 
-function stopMouseTracking() {
+export function stopMouseTracking() {
   if (state.mouseHandler) {
     document.removeEventListener('mousemove', state.mouseHandler);
     state.mouseHandler = null;
@@ -552,8 +546,11 @@ function updatePower() {
 // UI HELPERS
 // ==========================================
 
-function logToConsole(keys, msg, type = 'info') {
-  if (!devtoolsLogs) return;
+export function logToConsole(keys, msg, type = 'info') {
+  if (!devtoolsLogs) {
+    devtoolsLogs = document.getElementById('devtools-logs');
+    if (!devtoolsLogs) return;
+  }
 
   const now = new Date();
   const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}.${now.getMilliseconds().toString().padStart(3, '0')}`;
@@ -608,12 +605,15 @@ function formatKeyCombo(e) {
 function handleWin() {
   state.isActive = false;
   stopMouseTracking();
-  ghost.playCaptured();
+  const ghostEl = document.getElementById('ghost');
+  if (ghostEl && !ghostEl.className.includes('ghost--hidden') && !ghostEl.className.includes('ghost--captured')) {
+    ghost.playCaptured();
+  }
 
   // Delay to let the new burst animation finish (approx 1.5 - 2s)
   setTimeout(() => {
     if (state.onWin) state.onWin();
-  }, 2000);
+  }, ghostEl.className.includes('ghost--hidden') ? 0 : 2000);
 }
 
 // ==========================================
