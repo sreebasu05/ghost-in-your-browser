@@ -146,7 +146,6 @@ function startLevel() {
   const level = state.levels[state.currentLevelIndex];
 
   if (!level) {
-    // No more levels - user requested no extra repeats (skip retry phase)
     handleWin();
     return;
   }
@@ -157,30 +156,41 @@ function startLevel() {
   // Get shortcut data
   const shortcut = getShortcutById(level.shortcutId);
   state.currentShortcut = shortcut;
-  state.levelStartTime = Date.now();
   state.wrongAttempts = 0;
   state.hintsUsed = 0;
   state.hintsRevealed = 0;
 
   // Set up the browser state
-  level.setup();
-
-  state.isAnimating = false;
+  const setupPromise = level.setup();
 
   // Update UI
   const platform = getPlatform();
-  // Log challenge instruction into the console
   const challengeStr = level.challenge;
-  
-  logToConsole(null, `[SYSTEM] ${challengeStr}`, 'info');
+
+  if (setupPromise instanceof Promise) {
+    state.isAnimating = true;
+    setupPromise.then(() => {
+      if (!state.isActive) return;
+      state.isAnimating = false;
+      state.levelStartTime = Date.now();
+      
+      logToConsole(null, `[SYSTEM] ${challengeStr}`, 'info');
+      if (platform === 'mac' && shortcut.keys[platform].mods.includes('ctrl')) {
+        logToConsole(null, `[WARNING] macOS: In this one, use Ctrl instead of Cmd`, 'fail');
+      }
+    });
+  } else {
+    state.isAnimating = false;
+    state.levelStartTime = Date.now();
+    
+    logToConsole(null, `[SYSTEM] ${challengeStr}`, 'info');
+    if (platform === 'mac' && shortcut.keys[platform].mods.includes('ctrl')) {
+      logToConsole(null, `[WARNING] macOS: In this one, use Ctrl instead of Cmd`, 'fail');
+    }
+  }
 
   const totalLevels = state.levels.length;
   levelIndicator.textContent = `${state.currentLevelIndex + 1} / ${totalLevels}`;
-
-  // Log macOS simulated shortcut warning if applicable
-  if (platform === 'mac' && shortcut.keys[platform].mods.includes('ctrl')) {
-    logToConsole(null, `[WARNING] macOS: In this one, use Ctrl instead of Cmd`, 'fail');
-  }
 
   // Reset hints
   hintLabel.textContent = `Hint (${3 - state.hintsRevealed})`;
@@ -345,16 +355,16 @@ async function handleSuccess(level, e) {
   state.power = Math.max(0, state.power - powerDrain);
   updatePower();
 
-  // Show success in DevTools console FIRST
+  // Play level success animation first
+  if (level.onSuccess) {
+    await level.onSuccess();
+  }
+
+  // Show success in DevTools console after action completes
   const platform = getPlatform();
   const keysStr = e ? formatKeyCombo(e) : state.currentShortcut.keys[platform].display;
   const actionStr = state.currentShortcut.action;
   logToConsole(keysStr, actionStr, 'success');
-
-  // Play level success animation
-  if (level.onSuccess) {
-    await level.onSuccess();
-  }
 
   // Advance to next level after a snappy delay
   await delay(500);

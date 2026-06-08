@@ -358,13 +358,38 @@ export const ACT2_LEVELS = [
           </div>
         </div>
       `);
-      await ghost.playHit();
+      // Flash white
+      const browserEl = document.getElementById('game-browser');
+      browserEl.classList.add('flash-white');
+      browserEl.style.boxShadow = 'inset 0 0 0 9999px white';
       
-      ghost.setState('flee');
-      const content = document.getElementById('view-game');
-      ghost.moveTo(content, 'on');
-      await delay(300);
+      ghost.setState('captured');
+      import('../game.js').then(game => game.logToConsole(null, 'GHOST CAPTURED! PURGING FROM MEMORY...', 'info'));
+
+      const viewGame = document.getElementById('view-game');
+      const textNodes = viewGame.querySelectorAll('p, h1, span, div, kbd');
+      textNodes.forEach((node) => {
+        const delayVal = Math.random() * 0.4;
+        const rotate = (Math.random() - 0.5) * 60;
+        setTimeout(() => {
+          node.style.transition = `transform 1.2s cubic-bezier(0.55, 0.085, 0.68, 0.53) ${delayVal}s, opacity 1.2s ease ${delayVal}s`;
+          node.style.transform = `translateY(500vh) rotate(${rotate}deg)`;
+          node.style.opacity = '0';
+        }, 50);
+      });
+
+      await delay(1500);
+      browserEl.style.boxShadow = '';
       ghost.setState('hidden');
+
+      // Slowly transition to the captured page by fading out the current view
+      viewGame.style.transition = 'opacity 2s ease-in-out';
+      viewGame.style.opacity = '0';
+      
+      await delay(2000);
+      
+      viewGame.style.opacity = '1';
+      viewGame.style.transition = '';
     }
   }
 ];

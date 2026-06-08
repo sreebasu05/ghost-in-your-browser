@@ -8,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/index-BG3GXU9X.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-DyKppdB5.css">
+  <script type="module" crossorigin src="/assets/index-B4LQaaWG.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-DWjDDFAc.css">
 </head>
 <body>
 
@@ -61,7 +61,7 @@
             <div class="start-header">
               <div class="live-monitor-badge">LIVE MONITOR</div>
               <h1 class="start-title"><span class="cmd-prompt">$</span> ghost in your browser</h1>
-              <p class="start-tagline">A rogue process has hijacked your mouse. Use keyboard shortcuts to hunt it down.</p>
+              <p class="start-tagline">A <span class="rogue-ghost-glow">rogue ghost</span> has hijacked your mouse. Use keyboard shortcuts to hunt it down.</p>
             </div>
             
             <div class="diagnostic-logs">
@@ -80,6 +80,10 @@
           <!-- PAGE 2: OPTIONS -->
           <div class="start-page" id="start-page-2">
             <div class="act-menu">
+              <div class="guidelines-box">
+                <span class="guidelines-icon">💡</span>
+                <span class="guidelines-text"><strong>Tested only in Chrome and macOS.</strong> For the best experience, play in <strong>Full Screen</strong> mode and disable <strong>View → Always Show Toolbar in Full Screen</strong> in Chrome.</span>
+              </div>
               <p class="act-menu-label">SELECT OPERATION</p>
             <div class="act-grid">
               <div class="act-box" data-act="1">
@@ -93,6 +97,7 @@
                   <p class="act-box-desc">New tabs, reload, find, scroll</p>
                   <p class="start-instruction"><span class="instruction-press">Press</span> <kbd>⌘</kbd> + <kbd>B</kbd></p>
                 </div>
+                <div class="act-stats" id="act-1-stats"></div>
               </div>
               <div class="act-box" data-act="2">
                 <div class="act-icon">
@@ -105,6 +110,7 @@
                   <p class="act-box-desc">Navigate, jump, reopen tabs</p>
                   <p class="start-instruction"><span class="instruction-press">Press</span> <kbd>⌘</kbd> + <kbd>E</kbd></p>
                 </div>
+                <div class="act-stats" id="act-2-stats"></div>
               </div>
               <div class="act-box" data-act="3">
                 <div class="act-icon">
@@ -117,6 +123,7 @@
                   <p class="act-box-desc">History, windows, incognito</p>
                   <p class="start-instruction"><span class="instruction-press">Press</span> <kbd>⌘</kbd> + <kbd>I</kbd></p>
                 </div>
+                <div class="act-stats" id="act-3-stats"></div>
               </div>
               <div class="act-box" data-act="4">
                 <div class="act-icon">
@@ -129,6 +136,7 @@
                   <p class="act-box-desc">Zoom, reload, bookmark, print</p>
                   <p class="start-instruction"><span class="instruction-press">Press</span> <kbd>⌘</kbd> + <kbd>O</kbd></p>
                 </div>
+                <div class="act-stats" id="act-4-stats"></div>
               </div>
             </div>
           </div>
@@ -148,8 +156,8 @@
             <div class="win-ghost-captured" id="win-ghost">
               <svg viewBox="0 0 24 24" width="56" height="56" fill="none" stroke="var(--ghost-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 8px var(--ghost-color))">
                 <path d="M12 2C7.03 2 3 6.03 3 11v11a1 1 0 0 0 1.7.7l2.3-2.3 2.3 2.3a1 1 0 0 0 1.4 0l2.3-2.3 2.3 2.3a1 1 0 0 0 1.4 0l2.3-2.3 2.3 2.3a1 1 0 0 0 1.7-.7V11c0-4.97-4.03-9-9-9z" fill="rgba(179, 49, 241, 0.15)"></path>
-                <path d="M9 11l1.5-1.5L9 8" stroke="var(--ghost-color)" stroke-width="2.5"></path>
-                <path d="M15 11l-1.5-1.5L15 8" stroke="var(--ghost-color)" stroke-width="2.5"></path>
+                <ellipse cx="9.5" cy="9.5" rx="1.2" ry="2" fill="var(--ghost-color)"></ellipse>
+                <ellipse cx="14.5" cy="9.5" rx="1.2" ry="2" fill="var(--ghost-color)"></ellipse>
                 <path d="M10 15c.5-.5 1-.5 1.5 0s1 .5 1.5 0" stroke="var(--ghost-color)" stroke-width="2.2"></path>
               </svg>
             </div>
@@ -166,10 +174,6 @@
               <span class="stat-value" id="stat-mouse">0</span>
             </div>
             <div class="stat-row">
-              <span class="stat-label">Hints used</span>
-              <span class="stat-value" id="stat-hints">0</span>
-            </div>
-            <div class="stat-row">
               <span class="stat-label">Score</span>
               <span class="stat-value" id="stat-score">0</span>
             </div>
@@ -183,6 +187,14 @@
 
       </div>
       
+      <!-- Swipe/Navigation indicators -->
+      <div class="swipe-indicator left" id="swipe-back-indicator">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      </div>
+      <div class="swipe-indicator right" id="swipe-forward-indicator">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </div>
+
       <!-- DEVTOOLS PANEL -->
       <div class="devtools-panel" id="devtools-panel">
         <div class="devtools-header">
@@ -214,7 +226,7 @@
         <p class="challenge-subtext hidden" id="challenge-subtext"></p>
       </div>
       <div class="challenge-meta">
-        <button class="hint-btn" id="hint-btn" aria-label="Get a hint">
+        <button class="hint-btn" id="hint-btn" aria-label="Get a hint" style="display: none !important;">
           <span class="hint-icon">
             <svg class="icon-bulb" viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A5 5 0 0 0 8 8c0 1 .3 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"></path><line x1="9" y1="18" x2="15" y2="18"></line><line x1="10" y1="22" x2="14" y2="22"></line></svg>
           </span>
@@ -232,8 +244,8 @@
     <div class="ghost" id="ghost">
       <svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="var(--ghost-color)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M12 2C7.03 2 3 6.03 3 11v11a1 1 0 0 0 1.7.7l2.3-2.3 2.3 2.3a1 1 0 0 0 1.4 0l2.3-2.3 2.3 2.3a1 1 0 0 0 1.4 0l2.3-2.3 2.3 2.3a1 1 0 0 0 1.7-.7V11c0-4.97-4.03-9-9-9z" fill="rgba(179, 49, 241, 0.15)"></path>
-        <path d="M9 11l1.5-1.5L9 8" stroke="var(--ghost-color)" stroke-width="2.5"></path>
-        <path d="M15 11l-1.5-1.5L15 8" stroke="var(--ghost-color)" stroke-width="2.5"></path>
+        <ellipse cx="9.5" cy="9.5" rx="1.2" ry="2" fill="var(--ghost-color)"></ellipse>
+        <ellipse cx="14.5" cy="9.5" rx="1.2" ry="2" fill="var(--ghost-color)"></ellipse>
         <path d="M10 15c.5-.5 1-.5 1.5 0s1 .5 1.5 0" stroke="var(--ghost-color)" stroke-width="2.2"></path>
       </svg>
     </div>

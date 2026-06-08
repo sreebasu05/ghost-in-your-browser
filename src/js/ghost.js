@@ -70,26 +70,31 @@ export function moveTo(targetEl, position = 'on') {
   switch (position) {
     case 'on':
       // Center on top of the element
-      top = targetRect.top - browserRect.top + (targetRect.height / 2) - (ghostEl.offsetHeight / 2);
-      left = targetRect.left - browserRect.left + (targetRect.width / 2) - (ghostEl.offsetWidth / 2);
+      const ghostH = ghostEl.offsetHeight || 36;
+      const ghostW = ghostEl.offsetWidth || 36;
+      top = targetRect.top - browserRect.top + (targetRect.height / 2) - (ghostH / 2);
+      left = targetRect.left - browserRect.left + (targetRect.width / 2) - (ghostW / 2);
       break;
 
     case 'inside':
       // Inside the element, offset slightly from center
-      top = targetRect.top - browserRect.top + (targetRect.height / 2) - (ghostEl.offsetHeight / 2);
+      const ghostHInside = ghostEl.offsetHeight || 36;
+      top = targetRect.top - browserRect.top + (targetRect.height / 2) - (ghostHInside / 2);
       left = targetRect.left - browserRect.left + (targetRect.width * 0.6);
       break;
 
     case 'left-inside':
       // Inside the element, but hugging the left edge (like an icon)
-      top = targetRect.top - browserRect.top + (targetRect.height / 2) - (ghostEl.offsetHeight / 2);
+      const ghostHLeft = ghostEl.offsetHeight || 36;
+      top = targetRect.top - browserRect.top + (targetRect.height / 2) - (ghostHLeft / 2);
       left = targetRect.left - browserRect.left + 12;
       break;
 
     case 'below':
       // Below the visible area of the content
+      const ghostWBelow = ghostEl.offsetWidth || 36;
       top = targetRect.bottom - browserRect.top + 40;
-      left = targetRect.left - browserRect.left + (targetRect.width / 2) - (ghostEl.offsetWidth / 2);
+      left = targetRect.left - browserRect.left + (targetRect.width / 2) - (ghostWBelow / 2);
       break;
 
     default:

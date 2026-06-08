@@ -7,6 +7,8 @@ import * as ghost from '../ghost.js';
 function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
 const getStartContentUp = () => {
+  const selectPage = document.getElementById('start-page-2');
+  const selectPageHtml = selectPage ? selectPage.innerHTML : '';
   return `
     <div style="display: flex; flex-direction: column; width: 100%; height: 200%;">
       <style>
@@ -30,63 +32,14 @@ const getStartContentUp = () => {
         </div>
       </div>
       <div class="start-page" id="start-page-2">
-        <div class="act-menu">
-          <p class="act-menu-label">SELECT OPERATION</p>
-          <div class="act-grid">
-            <div class="act-box" data-act="1">
-              <div class="act-icon">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
-              </div>
-              <div class="act-box-content">
-                <div class="act-box-header">
-                  <span class="act-box-title">Browser Basics</span>
-                </div>
-                <p class="act-box-desc">New tabs, reload, find, scroll</p>
-                <p class="start-instruction"><span class="instruction-press">Press</span> <kbd>⌘</kbd> + <kbd>B</kbd></p>
-              </div>
-            </div>
-            <div class="act-box" data-act="2">
-              <div class="act-icon">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"></path><path d="M7 7h.01"></path></svg>
-              </div>
-              <div class="act-box-content">
-                <div class="act-box-header">
-                  <span class="act-box-title">Tab Warfare</span>
-                </div>
-                <p class="act-box-desc">Navigate, jump, reopen tabs</p>
-                <p class="start-instruction"><span class="instruction-press">Press</span> <kbd>⌘</kbd> + <kbd>E</kbd></p>
-              </div>
-            </div>
-            <div class="act-box" data-act="3">
-              <div class="act-icon">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
-              </div>
-              <div class="act-box-content">
-                <div class="act-box-header">
-                  <span class="act-box-title">Nav &amp; Windows</span>
-                </div>
-                <p class="act-box-desc">History, windows, incognito</p>
-                <p class="start-instruction"><span class="instruction-press">Press</span> <kbd>⌘</kbd> + <kbd>I</kbd></p>
-              </div>
-            </div>
-            <div class="act-box" data-act="4">
-              <div class="act-icon">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-              </div>
-              <div class="act-box-content">
-                <div class="act-box-header">
-                  <span class="act-box-title">Page Mastery</span>
-                </div>
-                <p class="act-box-desc">Zoom, reload, bookmark, print</p>
-                <p class="start-instruction"><span class="instruction-press">Press</span> <kbd>⌘</kbd> + <kbd>O</kbd></p>
-              </div>
-            </div>
-          </div>
+        <div class="act-menu" style="width: 100%;">
+          ${selectPageHtml}
         </div>
       </div>
     </div>
   `;
 };
+
 
 export const ACT4_LEVELS = [
   {

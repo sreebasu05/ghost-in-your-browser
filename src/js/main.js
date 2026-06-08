@@ -70,7 +70,88 @@ function initStartScreen() {
   ghost.show();
   ghost.setState('screensaver');
 
+  updateActLockStates();
+
   document.addEventListener('keydown', handleStartKey);
+}
+
+const actShortcuts = {
+  '1': '<span class="instruction-press">Press</span> <kbd>⌘</kbd> + <kbd>B</kbd>',
+  '2': '<span class="instruction-press">Press</span> <kbd>⌘</kbd> + <kbd>E</kbd>',
+  '3': '<span class="instruction-press">Press</span> <kbd>⌘</kbd> + <kbd>I</kbd>',
+  '4': '<span class="instruction-press">Press</span> <kbd>⌘</kbd> + <kbd>O</kbd>'
+};
+
+function updateActLockStates() {
+  const isAct1Completed = localStorage.getItem('ghost-game-act1-completed') === 'true';
+  document.querySelectorAll('.act-box').forEach(box => {
+    const act = box.getAttribute('data-act');
+    box.classList.remove('locked', 'completed');
+
+    // Add checkmarks and completed styling to completed acts
+    const isCompleted = localStorage.getItem(`ghost-game-act${act}-completed`) === 'true';
+    const statsContainer = document.getElementById(`act-${act}-stats`);
+    const instructionEl = box.querySelector('.start-instruction');
+
+    if (isCompleted) {
+      box.classList.add('completed');
+      const titleSpan = box.querySelector('.act-box-title');
+      if (titleSpan && !titleSpan.textContent.endsWith(' ✓')) {
+        titleSpan.textContent = titleSpan.textContent.replace(' ✓', '') + ' ✓';
+      }
+
+      // Populate best stats on the right side
+      const bestTimeRaw = localStorage.getItem(`ghost-game-act${act}-best-time`);
+      const bestScoreRaw = localStorage.getItem(`ghost-game-act${act}-best-score`);
+      if (statsContainer) {
+        const timeMs = bestTimeRaw ? parseInt(bestTimeRaw, 10) : null;
+        let formattedTime = '--:--';
+        if (timeMs !== null) {
+          const seconds = Math.floor(timeMs / 1000);
+          const minutes = Math.floor(seconds / 60);
+          const secs = seconds % 60;
+          formattedTime = `${minutes}:${secs.toString().padStart(2, '0')}`;
+        }
+        const formattedScore = bestScoreRaw !== null ? bestScoreRaw : '--';
+        
+        statsContainer.innerHTML = `
+          <div class="act-stat-item">
+            <span class="act-stat-label">Best Time</span>
+            <span class="act-stat-val">${formattedTime}</span>
+          </div>
+          <div class="act-stat-item">
+            <span class="act-stat-label">Best Score</span>
+            <span class="act-stat-val">${formattedScore}</span>
+          </div>
+        `;
+      }
+    } else {
+      if (statsContainer) {
+        statsContainer.innerHTML = '';
+      }
+    }
+
+    // Sequential Locking Logic: Unlocks only if previous act is completed
+    let isLocked = false;
+    if (act !== '1') {
+      const prevActNum = parseInt(act, 10) - 1;
+      const isPrevActCompleted = localStorage.getItem(`ghost-game-act${prevActNum}-completed`) === 'true';
+      if (!isPrevActCompleted) {
+        isLocked = true;
+      }
+    }
+
+    if (isLocked) {
+      box.classList.add('locked');
+      if (instructionEl) {
+        instructionEl.innerHTML = 'Locked';
+      }
+    } else {
+      if (instructionEl) {
+        instructionEl.innerHTML = actShortcuts[act];
+      }
+    }
+  });
 }
 
 function handleStartKey(e) {
@@ -98,6 +179,20 @@ function handleStartKey(e) {
   else if (key === 'o') actId = 'act4';
   
   if (actId) {
+    // Block selection if targeted act is locked
+    const actNum = actId.replace('act', '');
+    let isLocked = false;
+    if (actNum !== '1') {
+      const prevActNum = parseInt(actNum, 10) - 1;
+      const isPrevActCompleted = localStorage.getItem(`ghost-game-act${prevActNum}-completed`) === 'true';
+      if (!isPrevActCompleted) {
+        isLocked = true;
+      }
+    }
+
+    if (isLocked) {
+      return;
+    }
     e.preventDefault();
     document.removeEventListener('keydown', handleStartKey);
     startDisruption(actId);
@@ -133,9 +228,9 @@ function startDisruption(actId) {
       logToConsole(null, 'Ghost detection scanner active. Monitoring keystrokes...', 'info');
     }
 
-    // Make the screensaver ghost fly straight down for Act 1, or straight up for Act 4
+    // Freeze or animate screensaver ghost
     const ghostEl = document.getElementById('ghost');
-    if ((actId === 'act1' || actId === 'act4') && ghostEl && ghostEl.classList.contains('ghost--screensaver')) {
+    if ((actId === 'act1' || actId === 'act3' || actId === 'act4') && ghostEl && ghostEl.classList.contains('ghost--screensaver')) {
       // Get current computed position
       const rect = ghostEl.getBoundingClientRect();
       const parentRect = ghostEl.parentElement.getBoundingClientRect();
@@ -151,13 +246,15 @@ function startDisruption(actId) {
       // Force a reflow
       void ghostEl.offsetWidth;
       
-      // Now smoothly translate it off-screen
-      ghostEl.style.transition = 'top 2.5s ease-in-out, left 2.5s ease-in-out';
-      if (actId === 'act1') {
-        ghostEl.style.top = (parentRect.height + 400) + 'px'; // way below screen
-      } else {
-        ghostEl.style.zIndex = '9'; // behind toolbar/titlebar
-        ghostEl.style.top = '-400px'; // way above screen
+      if (actId === 'act1' || actId === 'act4') {
+        // Smoothly translate off-screen
+        ghostEl.style.transition = 'top 2.5s ease-in-out, left 2.5s ease-in-out';
+        if (actId === 'act1') {
+          ghostEl.style.top = (parentRect.height + 400) + 'px'; // way below screen
+        } else {
+          ghostEl.style.zIndex = '9'; // behind toolbar/titlebar
+          ghostEl.style.top = '-400px'; // way above screen
+        }
       }
     }
 
@@ -177,8 +274,30 @@ function startDisruption(actId) {
 // ==========================================
 
 function startGame(actId) {
-  startAct(actId, onGameWin);
+  startAct(actId, () => {
+    localStorage.setItem(`ghost-game-${actId}-completed`, 'true');
+
+    // Persist best stats to localStorage
+    const stats = getStats();
+    
+    const prevBestTimeRaw = localStorage.getItem(`ghost-game-${actId}-best-time`);
+    const prevBestTime = prevBestTimeRaw ? parseInt(prevBestTimeRaw, 10) : null;
+    const currentBestTime = stats.timeMs;
+    if (prevBestTime === null || isNaN(prevBestTime) || currentBestTime < prevBestTime) {
+      localStorage.setItem(`ghost-game-${actId}-best-time`, currentBestTime.toString());
+    }
+
+    const prevBestScoreRaw = localStorage.getItem(`ghost-game-${actId}-best-score`);
+    const prevBestScore = prevBestScoreRaw ? parseInt(prevBestScoreRaw, 10) : null;
+    const currentBestScore = stats.totalScore;
+    if (prevBestScore === null || isNaN(prevBestScore) || currentBestScore > prevBestScore) {
+      localStorage.setItem(`ghost-game-${actId}-best-score`, currentBestScore.toString());
+    }
+
+    onGameWin();
+  });
 }
+
 
 function onGameWin() {
   const stats = getStats();
@@ -210,10 +329,13 @@ function populateWinScreen(stats) {
 
   // Mouse attempts
   const mouseEl = document.getElementById('stat-mouse');
-  mouseEl.textContent = `${stats.mouseAttempts} times`;
+  mouseEl.textContent = stats.mouseAttempts > 0 ? `${stats.mouseAttempts} times` : '0';
 
   // Hints
-  document.getElementById('stat-hints').textContent = stats.totalHints.toString();
+  const hintsEl = document.getElementById('stat-hints');
+  if (hintsEl) {
+    hintsEl.textContent = stats.totalHints.toString();
+  }
 
   // Score
   document.getElementById('stat-score').textContent = `${stats.totalScore} / ${stats.maxScore}`;
