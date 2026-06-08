@@ -133,9 +133,9 @@ function startDisruption(actId) {
       logToConsole(null, 'Ghost detection scanner active. Monitoring keystrokes...', 'info');
     }
 
-    // Make the screensaver ghost fly straight down
+    // Make the screensaver ghost fly straight down ONLY for Act 1
     const ghostEl = document.getElementById('ghost');
-    if (ghostEl && ghostEl.classList.contains('ghost--screensaver')) {
+    if (actId === 1 && ghostEl && ghostEl.classList.contains('ghost--screensaver')) {
       // Get current computed position
       const rect = ghostEl.getBoundingClientRect();
       const parentRect = ghostEl.parentElement.getBoundingClientRect();

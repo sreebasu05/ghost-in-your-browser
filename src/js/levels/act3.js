@@ -50,7 +50,15 @@ export const ACT3_LEVELS = [
     shortcutId: 'forward',
     challenge: 'It is trying to escape forward. Leap ahead to intercept!',
     setup() {
-      // Handled by previous onSuccess
+      const btnForward = document.getElementById('btn-forward');
+      if (btnForward) {
+        ghost.moveTo(btnForward, 'on');
+      } else {
+        const content = document.getElementById('view-game');
+        ghost.moveTo(content, 'on');
+      }
+      ghost.show();
+      ghost.setState('idle');
     },
     async onSuccess() {
       // Simulate going forward
@@ -71,7 +79,15 @@ export const ACT3_LEVELS = [
     shortcutId: 'new_window',
     challenge: 'It escaped your browser. Deploy a second window to surround it!',
     setup() {
-      // Handled by previous onSuccess
+      const titlebar = document.querySelector('.browser-titlebar');
+      if (titlebar) {
+        ghost.moveTo(titlebar, 'on');
+      } else {
+        const content = document.getElementById('view-game');
+        ghost.moveTo(content, 'on');
+      }
+      ghost.show();
+      ghost.setState('idle');
     },
     async onSuccess() {
       await ghost.playHit();
@@ -106,7 +122,15 @@ export const ACT3_LEVELS = [
     shortcutId: 'incognito',
     challenge: 'It slipped into stealth mode. Boot your incognito window!',
     setup() {
-      // Handled by previous onSuccess
+      const profile = document.getElementById('browser-profile');
+      if (profile) {
+        ghost.moveTo(profile, 'on');
+      } else {
+        const content = document.getElementById('view-game');
+        ghost.moveTo(content, 'on');
+      }
+      ghost.show();
+      ghost.setState('idle');
     },
     async onSuccess() {
       await ghost.playHit();
@@ -147,7 +171,15 @@ export const ACT3_LEVELS = [
     shortcutId: 'close_window',
     challenge: 'Cut off its escape route. Collapse the secondary window!',
     setup() {
-      // Handled by previous onSuccess
+      const closeBtn = document.querySelector('.traffic-light.close');
+      if (closeBtn) {
+        ghost.moveTo(closeBtn, 'on');
+      } else {
+        const content = document.getElementById('view-game');
+        ghost.moveTo(content, 'on');
+      }
+      ghost.show();
+      ghost.setState('idle');
     },
     async onSuccess() {
       await ghost.playHit();

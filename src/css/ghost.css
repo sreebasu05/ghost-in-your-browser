@@ -13,7 +13,9 @@
     top var(--transition-normal),
     left var(--transition-normal),
     transform var(--transition-normal),
-    opacity var(--transition-normal);
+    opacity var(--transition-normal),
+    width 0.3s ease,
+    height 0.3s ease;
 }
 
 /* --- Animation States --- */

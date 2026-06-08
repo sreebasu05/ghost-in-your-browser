@@ -224,7 +224,7 @@ function onKeyDown(e, level) {
   // Check if the pressed key matches
   if (matchesShortcut(e, keys, level.shortcutId, platform)) {
     e.preventDefault();
-    handleSuccess(level);
+    handleSuccess(level, e);
   } else {
     // If it's a modifier key press alone (e.g. Cmd, Shift, Alt, Ctrl), ignore it without failing
     if (['meta', 'control', 'shift', 'alt'].includes(e.key.toLowerCase())) {
@@ -236,10 +236,11 @@ function onKeyDown(e, level) {
       e.preventDefault();
     }
     
-    // CUSTOM FAIL LOGIC for jump_tab cheat
+    // CUSTOM FAIL LOGIC for jump_tab cheat (intercept move right / next_tab or move left / prev_tab)
     if (level.shortcutId === 'jump_tab') {
       const nextTabKeys = getShortcutById('next_tab').keys[platform];
-      if (matchesShortcut(e, nextTabKeys, 'next_tab', platform)) {
+      const prevTabKeys = getShortcutById('prev_tab').keys[platform];
+      if (matchesShortcut(e, nextTabKeys, 'next_tab', platform) || matchesShortcut(e, prevTabKeys, 'prev_tab', platform)) {
         handleJumpTabCheat(e);
         return;
       }
@@ -283,6 +284,14 @@ function matchesShortcut(e, keys, shortcutId, platform) {
   if (targetKey === '1-8') {
     const num = parseInt(pressedKey);
     if (num >= 1 && num <= 8) {
+      const infectedTab = document.querySelector('.tab.infected');
+      if (infectedTab) {
+        const expectedIndex = parseInt(infectedTab.dataset.index);
+        const expectedKey = (expectedIndex + 1).toString();
+        if (pressedKey !== expectedKey) {
+          return false;
+        }
+      }
       return checkModifiers(e, keys.mods);
     }
     return false;
@@ -310,7 +319,7 @@ function checkModifiers(e, requiredMods) {
   return true;
 }
 
-async function handleSuccess(level) {
+async function handleSuccess(level, e) {
   if (!state.isActive) return;
 
   // Block further inputs but keep trapping native shortcuts
@@ -338,7 +347,7 @@ async function handleSuccess(level) {
 
   // Show success in DevTools console FIRST
   const platform = getPlatform();
-  const keysStr = state.currentShortcut.keys[platform].display;
+  const keysStr = e ? formatKeyCombo(e) : state.currentShortcut.keys[platform].display;
   const actionStr = state.currentShortcut.action;
   logToConsole(keysStr, actionStr, 'success');
 
@@ -387,19 +396,86 @@ function handleJumpTabCheat(e) {
   // Ghost taunts and jumps away
   ghost.playTaunt();
   
-  // Ghost jumps to a random tab to annoy player
-  const currentGhostTab = document.querySelector('.tab.infected');
+  // Find current active tab
+  const activeTab = document.querySelector('.tab.active');
   const allTabs = document.querySelectorAll('.tab');
-  if (currentGhostTab && allTabs.length > 0) {
-    const currentIndex = parseInt(currentGhostTab.dataset.index || '4');
-    const jumpTo = (currentIndex + 2) % allTabs.length;
-    
-    currentGhostTab.classList.remove('infected');
-    browserUI.infectTab(jumpTo);
-    
-    const newGhostTab = browserUI.getTab(jumpTo);
-    if (newGhostTab) ghost.moveTo(newGhostTab, 'on');
+  let activeIndex = activeTab ? parseInt(activeTab.dataset.index || '0') : 0;
+  
+  // Update active tab based on which shortcut was pressed
+  const platform = getPlatform();
+  const nextTabKeys = getShortcutById('next_tab').keys[platform];
+  const prevTabKeys = getShortcutById('prev_tab').keys[platform];
+  
+  if (matchesShortcut(e, nextTabKeys, 'next_tab', platform)) {
+    activeIndex = (activeIndex + 1) % allTabs.length;
+  } else if (matchesShortcut(e, prevTabKeys, 'prev_tab', platform)) {
+    activeIndex = (activeIndex - 1 + allTabs.length) % allTabs.length;
   }
+  
+  // Update tab strip active class
+  const tabObjects = Array.from(allTabs).map((tab, i) => {
+    return {
+      label: tab.querySelector('.tab-label').textContent,
+      active: i === activeIndex,
+      infected: tab.classList.contains('infected'),
+      favicon: 'ghost'
+    };
+  });
+  
+  // Constrain scramble index (0-7), avoiding current ghost position and new active index
+  const currentGhostTab = document.querySelector('.tab.infected');
+  let currentIndex = currentGhostTab ? parseInt(currentGhostTab.dataset.index || '4') : 4;
+  
+  let jumpTo = (currentIndex + 2) % 8;
+  while (jumpTo === currentIndex || jumpTo === activeIndex) {
+    jumpTo = (jumpTo + 1) % 8;
+  }
+  
+  // Set the infected flag on the new ghost tab
+  tabObjects.forEach((t, i) => {
+    t.infected = (i === jumpTo);
+  });
+  
+  browserUI.setTabs(tabObjects);
+  
+  // Update viewport content
+  if (activeIndex === 0) {
+    // Show select operation (Part 2 page)
+    const selectPage = document.getElementById('start-page-2');
+    if (selectPage) {
+      browserUI.setContent(`
+        <div class="start-page" style="height: 100%; min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+          ${selectPage.innerHTML}
+        </div>
+      `);
+    }
+    browserUI.setUrl('chrome://newtab/');
+  } else {
+    // Show Ghostgle
+    browserUI.setContent(`
+      <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #202124; color: #e8eaed; font-family: arial, sans-serif;">
+        <div style="font-size: 80px; font-weight: bold; letter-spacing: -2px; margin-bottom: 24px; text-shadow: 0 0 20px rgba(179, 49, 241, 0.4);">
+          <span style="color: #4285f4;">G</span><span style="color: #ea4335;">h</span><span style="color: #fbbc05;">o</span><span style="color: #4285f4;">s</span><span style="color: #34a853;">t</span><span style="color: #ea4335;">g</span><span style="color: #4285f4;">l</span><span style="color: #34a853;">e</span>
+        </div>
+        <div style="display: flex; align-items: center; background: #303134; border: 1px solid #5f6368; border-radius: 24px; padding: 10px 20px; width: 100%; max-width: 584px; margin-bottom: 24px;">
+          <svg focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="fill: #9aa0a6; width: 20px; height: 20px; margin-right: 12px;"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
+          <input type="text" style="background: transparent; border: none; outline: none; color: #e8eaed; width: 100%; font-size: 16px;" value="how to exorcise a browser window" readonly>
+          <div style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; margin-left: 8px;">
+            <svg viewBox="0 0 24 24" width="24" height="24" stroke="var(--ghost-color)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C7.03 2 3 6.03 3 11v11a1 1 0 0 0 1.7.7l2.3-2.3 2.3 2.3a1 1 0 0 0 1.4 0l2.3-2.3 2.3 2.3a1 1 0 0 0 1.4 0l2.3-2.3 2.3 2.3a1 1 0 0 0 1.7-.7V11c0-4.97-4.03-9-9-9z"></path></svg>
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px;">
+          <button style="background: #303134; border: 1px solid #303134; border-radius: 4px; color: #e8eaed; font-family: arial, sans-serif; font-size: 14px; padding: 10px 16px; cursor: default;">Ghost Search</button>
+          <button style="background: #303134; border: 1px solid #303134; border-radius: 4px; color: #e8eaed; font-family: arial, sans-serif; font-size: 14px; padding: 10px 16px; cursor: default;">I'm Feeling Spooky</button>
+        </div>
+      </div>
+    `);
+    browserUI.setUrl('https://ghost.browser/new-tab');
+  }
+  
+  // Position ghost on new scrambled tab
+  const newGhostTab = browserUI.getTab(jumpTo);
+  if (newGhostTab) ghost.moveTo(newGhostTab, 'on');
 
   if (e) {
     const keyCombo = formatKeyCombo(e);
@@ -571,8 +647,8 @@ export function logToConsole(keys, msg, type = 'info') {
     msgSpan.textContent = msg;
   }
 
-  entry.appendChild(timeSpan);
   entry.appendChild(msgSpan);
+  entry.appendChild(timeSpan);
   
   devtoolsLogs.appendChild(entry);
   devtoolsLogs.scrollTop = devtoolsLogs.scrollHeight;

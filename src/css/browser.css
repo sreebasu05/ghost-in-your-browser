@@ -185,6 +185,7 @@
   justify-content: center;
   background: transparent;
   border: none;
+  outline: none;
   border-radius: 50%;
   color: var(--text-muted);
   font-size: 14px;
@@ -566,10 +567,11 @@
 }
 
 .devtools-log-entry {
-  padding: 4px 12px;
+  padding: 6px 12px 18px 12px;
   font-size: 13px;
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  position: relative;
   line-height: 1.4;
   word-break: break-word;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
@@ -590,8 +592,12 @@
 }
 
 .log-time {
-  color: #666;
-  flex-shrink: 0;
+  color: #555;
+  font-size: 9.5px;
+  position: absolute;
+  bottom: 3px;
+  right: 12px;
+  user-select: none;
 }
 
 .log-msg {
