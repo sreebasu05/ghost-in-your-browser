@@ -633,67 +633,101 @@
 /* Stats */
 .win-stats {
   width: 100%;
-  max-width: 300px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 20px;
+  max-width: 800px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
 }
 
 .stat-row {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
   font-family: var(--font-mono);
-  font-size: 16px;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 12px 16px;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.stat-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(179, 49, 241, 0.15);
 }
 
 .stat-label {
-  color: var(--text-secondary);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
 }
 
 .stat-value {
-  color: var(--text-primary);
-  font-weight: 600;
+  font-size: 20px;
+  color: var(--ghost-color);
+  font-weight: 700;
 }
 
 /* Shortcut list */
 .win-shortcuts {
   width: 100%;
-  max-width: 320px;
+  max-width: 800px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 20px;
+  gap: 6px;
+  margin-bottom: 24px;
 }
 
 .win-shortcut-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 180px 1fr 100px;
   align-items: center;
-  gap: 10px;
+  gap: 16px;
   font-family: var(--font-mono);
   font-size: 14px;
-  padding: 8px 12px;
+  padding: 10px 16px;
   background: rgba(255, 255, 255, 0.02);
-  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.win-shortcut-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(179, 49, 241, 0.15);
 }
 
 .win-shortcut-keys {
   color: var(--ghost-color);
   font-weight: 600;
-  min-width: 70px;
 }
 
 .win-shortcut-action {
   color: var(--text-secondary);
-  flex: 1;
 }
 
 .win-shortcut-stars {
   color: var(--color-hint);
   letter-spacing: 2px;
+  text-align: right;
+}
+
+@media (max-width: 680px) {
+  .win-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .win-shortcut-row {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 12px;
+  }
+  .win-shortcut-stars {
+    text-align: left;
+  }
 }
 
 .win-cta {

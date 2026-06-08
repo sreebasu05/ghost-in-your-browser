@@ -255,6 +255,21 @@ export function scrollContent() {
 }
 
 /**
+ * Simulate a scroll-up animation.
+ * Moves content down and reveals content above.
+ * @returns {Promise<void>}
+ */
+export function scrollUpContent() {
+  return new Promise(resolve => {
+    contentArea.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+    setTimeout(resolve, 550);
+  });
+}
+
+/**
  * Show reload button spinning animation.
  */
 export function spinReload() {

@@ -24,6 +24,8 @@
   border-bottom: 1px solid var(--border-chrome);
   -webkit-user-select: none;
   user-select: none;
+  position: relative;
+  z-index: 12;
 }
 
 .traffic-lights {
@@ -169,6 +171,8 @@
   padding: 0 10px;
   gap: 8px;
   border-bottom: 1px solid var(--border-chrome);
+  position: relative;
+  z-index: 12;
 }
 
 .nav-buttons {

@@ -6,61 +6,188 @@ import * as ghost from '../ghost.js';
 
 function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
 
+const getStartContentUp = () => {
+  return `
+    <div style="display: flex; flex-direction: column; width: 100%; height: 200%;">
+      <style>
+        #view-game .start-page { flex: 0 0 50% !important; height: 50% !important; min-height: 50% !important; }
+      </style>
+      <div class="start-page" style="justify-content: flex-start; padding-top: 60px;">
+        <div style="padding:24px; max-width: 700px; text-align: left; width: 100%;">
+          <p style="color:var(--text-content-muted);margin-bottom:16px;">&gt; System Event Log...</p>
+          <p style="color:var(--text-content-muted);margin-bottom:4px;">&gt; Process 0x8B5CF6 attempted to evade detection</p>
+          <p style="color:var(--text-content-muted);margin-bottom:4px;">&gt; Attempting visual lock... FAILED</p>
+          <p style="color:var(--color-error);margin-bottom:4px;">&gt; Target went INVISIBLE</p>
+          <p style="color:var(--text-content-muted);margin-bottom:16px;">&gt; Recommend: search scan to locate hidden entities</p>
+          <p style="color:var(--text-content-muted);">---</p>
+          <p style="color:var(--text-content-muted);margin-top:12px; line-height: 1.6;">
+            The system kernel identified anomalies in the sector cache. Data fragments scattered across the memory pool suggest a hidden presence. 
+            While executing routine garbage collection, the daemon process encountered an unhandled exception triggered by a malicious <span class="ghost-hidden-word" id="trace-1" style="background:rgba(255,255,0,0.5);color:white;padding:2px 4px;border-radius:2px;">GHOST</span> entity.
+            This entity operates by intercepting DOM painting cycles and rewriting the display buffer before frames are rendered.
+            Administrators are advised to initiate a manual search protocol to isolate the rogue <span class="ghost-hidden-word" id="trace-2" style="background:rgba(255,255,0,0.5);color:white;padding:2px 4px;border-radius:2px;">GHOST</span> thread.
+            Failure to do so will result in cascading visual artifacts and potential corruption of the active viewport.
+          </p>
+        </div>
+      </div>
+      <div class="start-page" id="start-page-2">
+        <div class="act-menu">
+          <p class="act-menu-label">SELECT OPERATION</p>
+          <div class="act-grid">
+            <div class="act-box" data-act="1">
+              <div class="act-icon">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+              </div>
+              <div class="act-box-content">
+                <div class="act-box-header">
+                  <span class="act-box-title">Browser Basics</span>
+                </div>
+                <p class="act-box-desc">New tabs, reload, find, scroll</p>
+                <p class="start-instruction"><span class="instruction-press">Press</span> <kbd>⌘</kbd> + <kbd>B</kbd></p>
+              </div>
+            </div>
+            <div class="act-box" data-act="2">
+              <div class="act-icon">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"></path><path d="M7 7h.01"></path></svg>
+              </div>
+              <div class="act-box-content">
+                <div class="act-box-header">
+                  <span class="act-box-title">Tab Warfare</span>
+                </div>
+                <p class="act-box-desc">Navigate, jump, reopen tabs</p>
+                <p class="start-instruction"><span class="instruction-press">Press</span> <kbd>⌘</kbd> + <kbd>E</kbd></p>
+              </div>
+            </div>
+            <div class="act-box" data-act="3">
+              <div class="act-icon">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 11 22 2 13 21 11 13 3 11"></polygon></svg>
+              </div>
+              <div class="act-box-content">
+                <div class="act-box-header">
+                  <span class="act-box-title">Nav &amp; Windows</span>
+                </div>
+                <p class="act-box-desc">History, windows, incognito</p>
+                <p class="start-instruction"><span class="instruction-press">Press</span> <kbd>⌘</kbd> + <kbd>I</kbd></p>
+              </div>
+            </div>
+            <div class="act-box" data-act="4">
+              <div class="act-icon">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              </div>
+              <div class="act-box-content">
+                <div class="act-box-header">
+                  <span class="act-box-title">Page Mastery</span>
+                </div>
+                <p class="act-box-desc">Zoom, reload, bookmark, print</p>
+                <p class="start-instruction"><span class="instruction-press">Press</span> <kbd>⌘</kbd> + <kbd>O</kbd></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+};
+
 export const ACT4_LEVELS = [
   {
     shortcutId: 'scroll_up',
     challenge: 'The ghost doubled back upward! Scroll up to intercept.',
     setup() {
       browserUI.setTabs([{ label: 'Ghost in Your Browser', active: true, favicon: 'ghost' }]);
-      browserUI.setUrl('https://ghost.browser/scroll');
-      browserUI.setContent(`
-        <div id="scroll-container" style="padding:40px; height: 1200px; position: relative;">
-          <div id="ghost-target-top" style="position: absolute; top: 50px; left: 50%; transform: translateX(-50%); width: 100px; height: 50px; text-align: center; color: var(--text-primary); font-size: 18px; font-weight: bold;">
-            Haunting the header!
-          </div>
-          <p style="color:var(--text-secondary); margin-top: 800px;">It's down here.</p>
-        </div>
-      `);
+      browserUI.setUrl('https://ghost.browser');
+      browserUI.setContent(getStartContentUp());
       
       const content = document.getElementById('view-game');
-      content.scrollTop = 800; // scroll down
-      const target = document.getElementById('ghost-target-top');
-      if (target) {
-        ghost.moveTo(target, 'on');
-      } else {
-        ghost.moveTo(content, 'on');
+      content.scrollTop = content.scrollHeight; // Scroll down to the Select Operation page
+      
+      ghost.setState('hidden');
+      const ghostDOM = document.getElementById('ghost');
+      if (ghostDOM) {
+        ghostDOM.style.zIndex = '9'; // Send behind toolbar/titlebar
       }
-      ghost.show();
-      ghost.setState('idle');
     },
     async onSuccess() {
+      await browserUI.scrollUpContent();
+      
+      const target = document.getElementById('trace-2');
       const content = document.getElementById('view-game');
-      content.scrollTop = 0; // scroll up
-      await ghost.playHit();
-      ghost.setState('flee');
-      await delay(300);
+      const ghostDOM = document.getElementById('ghost');
+      if (ghostDOM) {
+        ghostDOM.style.zIndex = ''; // Restore default z-index so it sits on top of toolbar/tabs
+      }
+      if (target && ghostDOM) {
+        const rect = target.getBoundingClientRect();
+        const parentRect = ghostDOM.parentElement.getBoundingClientRect();
+        ghostDOM.style.transition = 'none';
+        ghostDOM.style.left = (rect.left - parentRect.left - 20) + 'px';
+        ghostDOM.style.top = (rect.top - parentRect.top - 40) + 'px';
+        void ghostDOM.offsetWidth;
+      }
+      ghost.show();
+      ghost.setState('hit');
+      await delay(500);
+      ghost.setState('hidden');
     }
   },
   {
     shortcutId: 'find_next',
     challenge: 'Found one trace, but it left more. Jump to the next match.',
     setup() {
+      browserUI.setUrl('https://ghost.browser');
+      browserUI.showFindBar('GHOST');
+      
+      const ghostDOM = document.getElementById('ghost');
+      if (ghostDOM) {
+        ghostDOM.style.zIndex = '';
+      }
+      
       browserUI.setContent(`
-        <div style="padding:40px;">
-          <h2 style="color:var(--text-primary);margin-bottom:16px;">Search Results</h2>
-          <p style="color:var(--text-secondary);">1. Trace found <span id="trace-1" style="background:rgba(255,255,0,0.5);color:white;padding:2px 4px;border-radius:2px;">here</span></p>
-          <p style="color:var(--text-secondary);margin-top:200px;">2. Trace found <span id="trace-2" style="background:rgba(255,255,0,0.5);color:white;padding:2px 4px;border-radius:2px;">here</span></p>
+        <div class="start-page" style="justify-content: flex-start; padding-top: 60px; height: 100%; width: 100%;">
+          <div style="padding:24px; max-width: 700px; text-align: left; width: 100%;">
+            <p style="color:var(--text-content-muted);margin-bottom:16px;">&gt; System Event Log...</p>
+            <p style="color:var(--text-content-muted);margin-bottom:4px;">&gt; Process 0x8B5CF6 attempted to evade detection</p>
+            <p style="color:var(--text-content-muted);margin-bottom:4px;">&gt; Attempting visual lock... FAILED</p>
+            <p style="color:var(--color-error);margin-bottom:4px;">&gt; Target went INVISIBLE</p>
+            <p style="color:var(--text-content-muted);margin-bottom:16px;">&gt; Recommend: search scan to locate hidden entities</p>
+            <p style="color:var(--text-content-muted);">---</p>
+            <p style="color:var(--text-content-muted);margin-top:12px; line-height: 1.6;">
+              The system kernel identified anomalies in the sector cache. Data fragments scattered across the memory pool suggest a hidden presence. 
+              While executing routine garbage collection, the daemon process encountered an unhandled exception triggered by a malicious <span class="ghost-hidden-word" id="trace-1" style="background:var(--ghost-color);color:white;padding:2px 4px;border-radius:2px;">GHOST</span> entity.
+              This entity operates by intercepting DOM painting cycles and rewriting the display buffer before frames are rendered.
+              Administrators are advised to initiate a manual search protocol to isolate the rogue <span class="ghost-hidden-word" id="trace-2" style="background:rgba(255,255,0,0.5);color:white;padding:2px 4px;border-radius:2px;">GHOST</span> thread.
+              Failure to do so will result in cascading visual artifacts and potential corruption of the active viewport.
+            </p>
+          </div>
         </div>
       `);
-      const trace1 = document.getElementById('trace-1');
-      if (trace1) ghost.moveTo(trace1, 'on');
+      
+      const trace2 = document.getElementById('trace-2');
+      if (trace2) {
+        ghost.moveTo(trace2, 'on');
+      }
       ghost.show();
       ghost.setState('idle');
     },
     async onSuccess() {
+      const trace1 = document.getElementById('trace-1');
       const trace2 = document.getElementById('trace-2');
-      if (trace2) ghost.moveTo(trace2, 'on');
+      if (trace1) {
+        trace1.style.background = 'rgba(255,255,0,0.5)';
+      }
+      if (trace2) {
+        trace2.style.background = 'var(--ghost-color)';
+        ghost.moveTo(trace2, 'on');
+      }
       await ghost.playHit();
+      
+      browserUI.hideFindBar();
+      if (trace1) {
+        trace1.style.background = '';
+      }
+      if (trace2) {
+        trace2.style.background = '';
+      }
+      
       ghost.setState('panic');
       await delay(300);
     }
@@ -69,6 +196,10 @@ export const ACT4_LEVELS = [
     shortcutId: 'hard_reload',
     challenge: 'Hiding in cached files. Force a deep reload!',
     setup() {
+      const ghostDOM = document.getElementById('ghost');
+      if (ghostDOM) {
+        ghostDOM.style.zIndex = '';
+      }
       const btnReload = document.getElementById('btn-reload');
       if (btnReload) {
         ghost.moveTo(btnReload, 'on');
@@ -91,14 +222,156 @@ export const ACT4_LEVELS = [
     }
   },
   {
+    shortcutId: 'stop_load',
+    challenge: 'Infinite loading loop. Hit emergency stop!',
+    setup() {
+      const ghostDOM = document.getElementById('ghost');
+      if (ghostDOM) {
+        ghostDOM.style.zIndex = '';
+      }
+      browserUI.setContent(`
+        <div style="display:flex; justify-content:center; align-items:center; height:100%; width:100%;">
+          <div id="spinner-container" class="spinner"></div>
+        </div>
+      `);
+      if (!document.getElementById('spinner-style')) {
+        const style = document.createElement('style');
+        style.id = 'spinner-style';
+        style.innerHTML = `
+          .spinner {
+            width: 50px; height: 50px;
+            border: 5px solid rgba(255,255,255,0.1);
+            border-top-color: var(--ghost-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+          }
+          @keyframes spin { 100% { transform: rotate(360deg); } }
+        `;
+        document.head.appendChild(style);
+      }
+      const spinner = document.getElementById('spinner-container');
+      if (spinner) {
+        ghost.moveTo(spinner, 'on');
+      } else {
+        const content = document.getElementById('view-game');
+        ghost.moveTo(content, 'on');
+      }
+      ghost.show();
+      ghost.setState('idle');
+    },
+    async onSuccess() {
+      const style = document.getElementById('spinner-style');
+      if (style) style.remove();
+      
+      browserUI.setContent(`
+        <div style="position:relative; display:flex; flex-direction:column; justify-content:center; align-items:center; height:100%; width:100%; font-family:var(--font-mono); color: var(--text-primary); overflow: hidden; background: radial-gradient(circle at center, rgba(179, 49, 241, 0.04) 0%, rgba(10, 10, 10, 0.9) 100%);">
+          <!-- Background Map Overlay -->
+          <div style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0.15; pointer-events:none; z-index:0; display:flex; justify-content:center; align-items:center;">
+            <svg width="100%" height="100%" viewBox="0 0 800 600" style="filter: drop-shadow(0 0 10px rgba(179, 49, 241, 0.5));">
+              <!-- Network links -->
+              <line x1="200" y1="150" x2="350" y2="250" stroke="var(--ghost-color)" stroke-width="2" stroke-dasharray="5,5" />
+              <line x1="350" y1="250" x2="600" y2="180" stroke="var(--ghost-color)" stroke-width="2" stroke-dasharray="5,5" />
+              <line x1="350" y1="250" x2="500" y2="450" stroke="var(--ghost-color)" stroke-width="2" stroke-dasharray="5,5" />
+              <line x1="200" y1="150" x2="150" y2="350" stroke="var(--ghost-color)" stroke-dasharray="3,3" />
+              <line x1="150" y1="350" x2="300" y2="480" stroke="var(--ghost-color)" stroke-dasharray="3,3" />
+              <line x1="300" y1="480" x2="500" y2="450" stroke="var(--ghost-color)" stroke-dasharray="3,3" />
+              <!-- Map nodes -->
+              <circle cx="200" cy="150" r="10" fill="none" stroke="var(--ghost-color)" stroke-width="2" />
+              <circle cx="200" cy="150" r="4" fill="var(--ghost-color)" />
+              <text x="190" y="130" fill="var(--text-content-muted)" font-size="10" font-family="var(--font-mono)">ACT 1: BASICS</text>
+              
+              <circle cx="600" cy="180" r="10" fill="none" stroke="var(--ghost-color)" stroke-width="2" />
+              <circle cx="600" cy="180" r="4" fill="var(--ghost-color)" />
+              <text x="590" y="160" fill="var(--text-content-muted)" font-size="10" font-family="var(--font-mono)">ACT 2: TABWAR</text>
+              
+              <circle cx="150" cy="350" r="10" fill="none" stroke="var(--ghost-color)" stroke-width="2" />
+              <circle cx="150" cy="350" r="4" fill="var(--ghost-color)" />
+              <text x="140" y="330" fill="var(--text-content-muted)" font-size="10" font-family="var(--font-mono)">ACT 3: NAVWIN</text>
+              
+              <circle cx="500" cy="450" r="10" fill="none" stroke="var(--ghost-color)" stroke-width="2" />
+              <circle cx="500" cy="450" r="4" fill="var(--ghost-color)" />
+              <text x="490" y="430" fill="var(--text-content-muted)" font-size="10" font-family="var(--font-mono)">ACT 4: MASTERY</text>
+              
+              <!-- Containment Target Center -->
+              <circle cx="350" cy="250" r="24" fill="none" stroke="var(--color-error)" stroke-width="2" stroke-dasharray="4,4" />
+              <circle cx="350" cy="250" r="14" fill="none" stroke="var(--ghost-color)" stroke-width="1.5" />
+              <circle cx="350" cy="250" r="5" fill="var(--color-error)" />
+              <text x="365" y="235" fill="var(--ghost-color)" font-size="11" font-weight="bold" font-family="var(--font-mono)">ENTITY_ROOT</text>
+            </svg>
+          </div>
+          
+          <!-- Diagnostics Content Panel -->
+          <div style="z-index:1; display:flex; flex-direction:column; align-items:center; max-width:480px; width:90%; padding:20px; border-radius:10px; background:rgba(20, 20, 20, 0.85); border:1px solid rgba(179, 49, 241, 0.25); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); backdrop-filter: blur(8px);">
+            <h1 class="distorted-page" style="color:var(--color-error); font-size:36px; font-weight:bold; letter-spacing:8px; text-shadow:0 0 15px rgba(248,113,113,0.7); margin:0; animation: text-glitch 0.15s infinite alternate;">
+              CANCELLED
+            </h1>
+            <p style="color:var(--text-content-muted); font-size:10px; margin-top:8px; letter-spacing:2px; text-transform:uppercase;">
+              Exorcism protocol initiated. Monitoring root node...
+            </p>
+            
+            <!-- Root diagnostic panel -->
+            <div style="width:100%; margin-top:20px; border-top:1px solid rgba(179,49,241,0.2); padding-top:16px; display:grid; grid-template-columns: 1fr; gap:12px; font-size:11px; text-align:left;">
+              <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed rgba(255,255,255,0.05); padding-bottom:8px;">
+                <span style="color:var(--text-secondary);">TARGET ENTITY:</span>
+                <span style="color:var(--ghost-color); font-weight:bold;">0x8B5CF6 (GHOST_DAEMON)</span>
+              </div>
+              
+              <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px dashed rgba(255,255,255,0.05); padding-bottom:8px;">
+                <span style="color:var(--text-secondary);">CONTAINMENT LOC:</span>
+                <span id="spooky-location" style="color:var(--ghost-color); font-weight: bold; letter-spacing: 2.5px; font-family: var(--font-mono); text-shadow: 0 0 8px var(--ghost-color-glow);">
+                  Loading...
+                </span>
+              </div>
+              
+              <div style="margin-top:8px;">
+                <span style="color:var(--text-secondary); display:block; margin-bottom:8px; font-weight:bold;">ENTITY TRACKING LOGS (SECTORS VISITED):</span>
+                <div style="display:flex; flex-direction:column; gap:6px; background:rgba(0,0,0,0.4); padding:10px; border-radius:6px; font-size:10px; color:var(--text-content-muted); border:1px solid rgba(255,255,255,0.02);">
+                  <div style="display:flex; justify-content:space-between;"><span style="color:var(--color-success);">✓ SECTOR_1_BASICS:</span><span>VISITED [PURGED]</span></div>
+                  <div style="display:flex; justify-content:space-between;"><span style="color:var(--color-success);">✓ SECTOR_2_TABWAR:</span><span>VISITED [CONTAINED]</span></div>
+                  <div style="display:flex; justify-content:space-between;"><span style="color:var(--color-success);">✓ SECTOR_3_NAVWIN:</span><span>VISITED [ISOLATED]</span></div>
+                  <div style="display:flex; justify-content:space-between;"><span style="color:var(--ghost-color); font-weight:bold;">☠ SECTOR_4_ZOOM:</span><span style="color:var(--ghost-color);">ACTIVE INTERCEPT</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `);
+      
+      // Start jumbling location animation
+      if (window.spookyLocationInterval) {
+        clearInterval(window.spookyLocationInterval);
+      }
+      const chars = "☠☣☢⚡⚙⚛0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ?$#@!";
+      const targetText = "SECTOR_9_CONTAINMENT";
+      window.spookyLocationInterval = setInterval(() => {
+        const el = document.getElementById('spooky-location');
+        if (el) {
+          el.textContent = Array.from(targetText).map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
+        }
+      }, 80);
+
+      await ghost.playHit();
+      ghost.setState('idle');
+      await delay(300);
+    }
+  },
+  {
     shortcutId: 'zoom_in',
     challenge: 'It shrunk to microscopic size. Zoom in!',
     setup() {
+      const ghostDOM = document.getElementById('ghost');
+      if (ghostDOM) {
+        ghostDOM.style.zIndex = '';
+      }
       const content = document.getElementById('view-game');
+      if (content) {
+        content.style.transition = 'transform 0.3s ease';
+        content.style.transform = 'scale(0.15)'; // extremely tiny zoom scale
+      }
       const ghostEl = document.getElementById('ghost');
       if (ghostEl) {
-        ghostEl.style.width = '12px';
-        ghostEl.style.height = '12px';
+        ghostEl.style.width = '6px';
+        ghostEl.style.height = '6px';
       }
       ghost.moveTo(content, 'on');
       ghost.show();
@@ -108,31 +381,47 @@ export const ACT4_LEVELS = [
       const content = document.getElementById('view-game');
       if (content) {
         content.style.transition = 'transform 0.3s ease';
-        content.style.transform = 'scale(1.2)';
+        content.style.transform = 'scale(1.5)'; // scaled back up larger
       }
       const ghostEl = document.getElementById('ghost');
       if (ghostEl) {
-        ghostEl.style.width = '36px';
-        ghostEl.style.height = '36px';
+        ghostEl.style.width = '54px';
+        ghostEl.style.height = '54px';
       }
       await ghost.playHit();
       ghost.setState('panic');
-      await delay(300);
+      await delay(200); // split second pause
+
+      // Instantly zoom out a lot (to scale(4) with a huge ghost) to transition to zoom_out level
+      if (content) {
+        content.style.transition = 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)';
+        content.style.transform = 'scale(4)';
+      }
+      if (ghostEl) {
+        ghostEl.style.transition = 'width 0.5s ease, height 0.5s ease';
+        ghostEl.style.width = '144px';
+        ghostEl.style.height = '144px';
+      }
+      await delay(500);
     }
   },
   {
     shortcutId: 'zoom_out',
     challenge: 'It grew enormous. Zoom out!',
     setup() {
+      const ghostDOM = document.getElementById('ghost');
+      if (ghostDOM) {
+        ghostDOM.style.zIndex = '';
+      }
       const content = document.getElementById('view-game');
       if (content) {
         content.style.transition = 'transform 0.3s ease';
-        content.style.transform = 'scale(1.2)';
+        content.style.transform = 'scale(4)'; // extremely huge zoom scale
       }
       const ghostEl = document.getElementById('ghost');
       if (ghostEl) {
-        ghostEl.style.width = '90px';
-        ghostEl.style.height = '90px';
+        ghostEl.style.width = '144px';
+        ghostEl.style.height = '144px';
       }
       ghost.moveTo(content, 'on');
       ghost.show();
@@ -142,12 +431,12 @@ export const ACT4_LEVELS = [
       const content = document.getElementById('view-game');
       if (content) {
         content.style.transition = 'transform 0.3s ease';
-        content.style.transform = 'scale(0.8)';
+        content.style.transform = 'scale(0.3)'; // scaled back down smaller
       }
       const ghostEl = document.getElementById('ghost');
       if (ghostEl) {
-        ghostEl.style.width = '36px';
-        ghostEl.style.height = '36px';
+        ghostEl.style.width = '12px';
+        ghostEl.style.height = '12px';
       }
       await ghost.playHit();
       ghost.setState('idle');
@@ -158,16 +447,37 @@ export const ACT4_LEVELS = [
     shortcutId: 'zoom_reset',
     challenge: 'Snap viewport to normal to trap it!',
     setup() {
+      const ghostDOM = document.getElementById('ghost');
+      if (ghostDOM) {
+        ghostDOM.style.zIndex = '';
+      }
       const content = document.getElementById('view-game');
       if (content) {
         content.style.transition = 'transform 0.3s ease';
-        content.style.transform = 'scale(0.8)';
+        content.style.transform = 'scale(0.3)';
         ghost.moveTo(content, 'on');
+      }
+      const ghostEl = document.getElementById('ghost');
+      if (ghostEl) {
+        ghostEl.style.width = '36px';
+        ghostEl.style.height = '36px';
       }
       ghost.show();
       ghost.setState('idle');
     },
     async onSuccess() {
+      // Clear jumble animation and set final clean location
+      if (window.spookyLocationInterval) {
+        clearInterval(window.spookyLocationInterval);
+        window.spookyLocationInterval = null;
+      }
+      const locEl = document.getElementById('spooky-location');
+      if (locEl) {
+        locEl.textContent = "SECTOR_9_CONTAINMENT";
+        locEl.style.color = "var(--color-success)";
+        locEl.style.textShadow = "0 0 12px rgba(74, 222, 128, 0.6)";
+      }
+
       const content = document.getElementById('view-game');
       if (content) {
         content.style.transition = 'transform 0.3s ease';
@@ -189,59 +499,13 @@ export const ACT4_LEVELS = [
     }
   },
   {
-    shortcutId: 'stop_load',
-    challenge: 'Infinite loading loop. Hit emergency stop!',
-    setup() {
-      browserUI.setContent(`
-        <div style="padding:40px;text-align:center;">
-          <h2 style="color:var(--text-primary);margin-bottom:16px;">Loading...</h2>
-          <div id="spinner-container" class="spinner"></div>
-        </div>
-      `);
-      if (!document.getElementById('spinner-style')) {
-        const style = document.createElement('style');
-        style.id = 'spinner-style';
-        style.innerHTML = `
-          .spinner {
-            width: 50px; height: 50px;
-            border: 5px solid rgba(255,255,255,0.1);
-            border-top-color: #00ffcc;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-          }
-          @keyframes spin { 100% { transform: rotate(360deg); } }
-        `;
-        document.head.appendChild(style);
-      }
-      const spinner = document.getElementById('spinner-container');
-      if (spinner) {
-        ghost.moveTo(spinner, 'on');
-      } else {
-        const content = document.getElementById('view-game');
-        ghost.moveTo(content, 'on');
-      }
-      ghost.show();
-      ghost.setState('idle');
-    },
-    async onSuccess() {
-      const style = document.getElementById('spinner-style');
-      if (style) style.remove();
-      
-      browserUI.setContent(`
-        <div style="padding:40px;text-align:center;">
-          <h2 style="color:var(--text-primary);margin-bottom:16px;">Stopped.</h2>
-        </div>
-      `);
-      await ghost.playHit();
-      ghost.setState('idle');
-      await delay(300);
-    }
-  },
-  {
     shortcutId: 'bookmark',
     challenge: 'Bookmark the page to save its location!',
     setup() {
+      const ghostDOM = document.getElementById('ghost');
+      if (ghostDOM) {
+        ghostDOM.style.zIndex = '';
+      }
       const star = document.getElementById('bookmark-icon');
       if (star) {
         ghost.moveTo(star, 'on');
@@ -262,6 +526,10 @@ export const ACT4_LEVELS = [
     shortcutId: 'print',
     challenge: 'Print the page to capture a hard copy!',
     setup() {
+      const ghostDOM = document.getElementById('ghost');
+      if (ghostDOM) {
+        ghostDOM.style.zIndex = '';
+      }
       const content = document.getElementById('view-game');
       if (content) {
         ghost.moveTo(content, 'on');
@@ -275,13 +543,33 @@ export const ACT4_LEVELS = [
       browserEl.classList.add('flash-white');
       browserEl.style.boxShadow = 'inset 0 0 0 9999px white';
       
-      await ghost.playHit();
-      await delay(200);
+      ghost.setState('captured');
+      import('../game.js').then(game => game.logToConsole(null, 'GHOST CAPTURED! PURGING FROM MEMORY...', 'info'));
+
+      const viewGame = document.getElementById('view-game');
+      const textNodes = viewGame.querySelectorAll('p, h1, span, div, kbd');
+      textNodes.forEach((node) => {
+        const delayVal = Math.random() * 0.4;
+        const rotate = (Math.random() - 0.5) * 60;
+        setTimeout(() => {
+          node.style.transition = `transform 1.2s cubic-bezier(0.55, 0.085, 0.68, 0.53) ${delayVal}s, opacity 1.2s ease ${delayVal}s`;
+          node.style.transform = `translateY(500vh) rotate(${rotate}deg)`;
+          node.style.opacity = '0';
+        }, 50);
+      });
+
+      await delay(1500);
       browserEl.style.boxShadow = '';
+      ghost.setState('hidden');
+
+      // Slowly transition to the captured page by fading out the current view
+      viewGame.style.transition = 'opacity 2s ease-in-out';
+      viewGame.style.opacity = '0';
       
-      ghost.setState('panic');
-      await delay(500);
-      ghost.setState('hidden'); // Captured!
+      await delay(2000);
+      
+      viewGame.style.opacity = '1';
+      viewGame.style.transition = '';
     }
   }
 ];

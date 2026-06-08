@@ -133,9 +133,9 @@ function startDisruption(actId) {
       logToConsole(null, 'Ghost detection scanner active. Monitoring keystrokes...', 'info');
     }
 
-    // Make the screensaver ghost fly straight down ONLY for Act 1
+    // Make the screensaver ghost fly straight down for Act 1, or straight up for Act 4
     const ghostEl = document.getElementById('ghost');
-    if (actId === 1 && ghostEl && ghostEl.classList.contains('ghost--screensaver')) {
+    if ((actId === 'act1' || actId === 'act4') && ghostEl && ghostEl.classList.contains('ghost--screensaver')) {
       // Get current computed position
       const rect = ghostEl.getBoundingClientRect();
       const parentRect = ghostEl.parentElement.getBoundingClientRect();
@@ -151,9 +151,14 @@ function startDisruption(actId) {
       // Force a reflow
       void ghostEl.offsetWidth;
       
-      // Now smoothly translate it way down
+      // Now smoothly translate it off-screen
       ghostEl.style.transition = 'top 2.5s ease-in-out, left 2.5s ease-in-out';
-      ghostEl.style.top = (parentRect.height + 400) + 'px'; // way below screen
+      if (actId === 'act1') {
+        ghostEl.style.top = (parentRect.height + 400) + 'px'; // way below screen
+      } else {
+        ghostEl.style.zIndex = '9'; // behind toolbar/titlebar
+        ghostEl.style.top = '-400px'; // way above screen
+      }
     }
 
     // After 2.5 seconds, start the game
