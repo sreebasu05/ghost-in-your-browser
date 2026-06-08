@@ -60,11 +60,22 @@ function initStartScreen() {
   browserUI.setTabs([{ label: 'Ghost in Your Browser', active: true, favicon: 'ghost' }]);
   browserUI.setUrl('https://ghost.browser');
   browserUI.hideFindBar();
+  document.getElementById('devtools-panel').classList.remove('is-open');
   document.addEventListener('keydown', handleStartKey);
 }
 
 function handleStartKey(e) {
   if (currentView !== 'start') return;
+  
+  // Handle Spacebar to scroll down to the options
+  if (e.code === 'Space') {
+    e.preventDefault();
+    document.getElementById('view-start').scrollTo({
+      top: document.getElementById('view-start').scrollHeight,
+      behavior: 'smooth'
+    });
+    return;
+  }
   
   // Require Cmd/Ctrl for the start menu shortcuts
   if (!e.metaKey && !e.ctrlKey) return;
@@ -114,6 +125,7 @@ function startDisruption(actId) {
 // ==========================================
 
 function startGame(actId) {
+  document.getElementById('devtools-panel').classList.add('is-open');
   startAct(actId, onGameWin);
 }
 
@@ -121,6 +133,7 @@ function onGameWin() {
   const stats = getStats();
   populateWinScreen(stats);
   showView('win');
+  document.getElementById('devtools-panel').classList.remove('is-open');
 
   // Listen for restart
   document.addEventListener('keydown', handleWinKey);

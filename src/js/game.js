@@ -106,6 +106,12 @@ export function startAct(actId, onWin) {
 
   updatePower();
   startMouseTracking();
+  
+  if (devtoolsLogs) {
+    devtoolsLogs.innerHTML = '';
+    logToConsole(null, 'Ghost detection scanner active. Monitoring keystrokes...', 'info');
+  }
+
   startLevel();
 }
 

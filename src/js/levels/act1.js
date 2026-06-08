@@ -12,29 +12,35 @@ import * as browserUI from '../browser-ui.js';
 import * as ghost from '../ghost.js';
 
 const START_CONTENT_HTML = `
-  <div class="start-content">
-    <div class="live-monitor-badge">LIVE MONITOR</div>
-    <h1 class="start-title"><span class="cmd-prompt">$</span> ghost in your browser</h1>
-    <p class="start-tagline">Rogue process detected. Click it to terminate.</p>
+  <div class="start-page" style="height:100%; min-height:100%;">
+    <div class="start-header">
+      <div class="live-monitor-badge">LIVE MONITOR</div>
+      <h1 class="start-title"><span class="cmd-prompt">$</span> ghost in your browser</h1>
+      <p class="start-tagline">Rogue process detected. Click it to terminate.</p>
+    </div>
     <div class="diagnostic-logs">
       <p class="diag-line">> Scanning memory allocation...</p>
       <p class="diag-line diagnostic-highlight">> 1 ghost detected in rendering pipeline</p>
       <p class="diag-line">> Status: <span class="status-haunting">HAUNTING</span></p>
       <p class="diag-line">> Action required: Manual exorcism</p>
+      <p class="diag-line diag-prompt">> <span class="cursor-blink">_</span></p>
     </div>
   </div>
 `;
 
 const CORRUPTED_CONTENT_HTML = `
-  <div class="start-content">
-    <div class="live-monitor-badge" style="color:var(--color-error);text-shadow:0 0 10px rgba(248,113,113,0.4);">LI░E M█NIT▓R</div>
-    <h1 class="start-title" style="color:var(--color-error);"><span class="cmd-prompt" style="color:var(--color-error);">$</span> gh░st in y▓ur br█wser</h1>
-    <p class="start-tagline" style="color:var(--color-error);">R░g█e pr█ce▒s det▓ct█d. C░i█k to t█rmin▓te.</p>
+  <div class="start-page" style="height:100%; min-height:100%;">
+    <div class="start-header">
+      <div class="live-monitor-badge" style="color:var(--color-error);text-shadow:0 0 10px rgba(248,113,113,0.4);">LI░E M█NIT▓R</div>
+      <h1 class="start-title" style="color:var(--color-error);"><span class="cmd-prompt" style="color:var(--color-error);">$</span> gh░st in y▓ur br█wser</h1>
+      <p class="start-tagline" style="color:var(--color-error);">R░g█e pr█ce▒s det▓ct█d. C░i█k to t█rmin▓te.</p>
+    </div>
     <div class="diagnostic-logs" style="border-color:rgba(248,113,113,0.25);background:rgba(248,113,113,0.03);color:var(--color-error);">
       <p class="diag-line">> Sc▒nni█g mem░ry alloc█tion...</p>
       <p class="diag-line">> FA█T█L ERR░R: GH░ST_0x8B5CF6</p>
       <p class="diag-line">> Status: <span style="color:var(--color-error);font-weight:700;text-shadow:0 0 8px rgba(248,113,113,0.4);">CORRUPTED</span></p>
       <p class="diag-line">> Action required: SYS█EM RE░OAD</p>
+      <p class="diag-line diag-prompt">> <span class="cursor-blink" style="color:var(--color-error);">_</span></p>
     </div>
   </div>
 `;

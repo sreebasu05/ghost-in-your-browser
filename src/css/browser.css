@@ -276,23 +276,35 @@
   overflow: hidden;
 }
 
+#view-start {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
 #view-game, #view-win {
   overflow-y: auto;
   overflow-x: hidden;
 }
 
 /* Custom scrollbar styling for the simulated browser scrollable areas */
+#view-start::-webkit-scrollbar,
 #view-game::-webkit-scrollbar,
+#view-win::-webkit-scrollbar,
 .win-content::-webkit-scrollbar {
   width: 8px;
 }
 
+#view-start::-webkit-scrollbar-track,
 #view-game::-webkit-scrollbar-track,
+#view-win::-webkit-scrollbar-track,
 .win-content::-webkit-scrollbar-track {
   background: var(--bg-content);
 }
 
+#view-start::-webkit-scrollbar-thumb,
 #view-game::-webkit-scrollbar-thumb,
+#view-win::-webkit-scrollbar-thumb,
 .win-content::-webkit-scrollbar-thumb {
   background: rgba(179, 49, 241, 0.2);
   border-radius: 4px;
@@ -300,7 +312,9 @@
   transition: background var(--transition-fast);
 }
 
+#view-start::-webkit-scrollbar-thumb:hover,
 #view-game::-webkit-scrollbar-thumb:hover,
+#view-win::-webkit-scrollbar-thumb:hover,
 .win-content::-webkit-scrollbar-thumb:hover {
   background: rgba(179, 49, 241, 0.45);
 }
@@ -481,6 +495,12 @@
   flex-direction: column;
   z-index: 10;
   font-family: var(--font-mono);
+  margin-right: -320px;
+  transition: margin-right var(--transition-normal);
+}
+
+.devtools-panel.is-open {
+  margin-right: 0;
 }
 
 .devtools-header {
@@ -499,7 +519,7 @@
 
 .devtools-tab {
   padding: 0 10px;
-  font-size: 11px;
+  font-size: 13px;
   color: #999;
   display: flex;
   align-items: center;
@@ -523,7 +543,7 @@
 
 .devtools-log-entry {
   padding: 4px 12px;
-  font-size: 11px;
+  font-size: 13px;
   display: flex;
   gap: 8px;
   line-height: 1.4;
@@ -536,8 +556,8 @@
 }
 
 .devtools-log-entry.success {
-  background: rgba(138, 180, 248, 0.08);
-  color: #8ab4f8;
+  background: rgba(74, 222, 128, 0.08);
+  color: #4ade80;
 }
 
 .devtools-log-entry.fail {
