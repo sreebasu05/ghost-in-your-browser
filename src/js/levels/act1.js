@@ -10,35 +10,8 @@
 
 import * as browserUI from '../browser-ui.js';
 import * as ghost from '../ghost.js';
-
-const getStartContent = () => {
-  const startContent = document.querySelector('#view-start .start-content').innerHTML;
-  return `
-    <div style="display: flex; flex-direction: column; width: 100%; height: 300%;">
-      <style>
-        #view-game .start-page { flex: 0 0 33.333% !important; height: 33.333% !important; min-height: 33.333% !important; }
-      </style>
-      ${startContent}
-      <div class="start-page" style="justify-content: flex-start; padding-top: 60px;">
-      <div style="padding:24px; max-width: 700px; text-align: left; width: 100%;">
-        <p style="color:var(--text-content-muted);margin-bottom:16px;">> System Event Log...</p>
-        <p style="color:var(--text-content-muted);margin-bottom:4px;">> Process 0x8B5CF6 attempted to evade detection</p>
-        <p style="color:var(--text-content-muted);margin-bottom:4px;">> Attempting visual lock... FAILED</p>
-        <p style="color:var(--color-error);margin-bottom:4px;">> Target went INVISIBLE</p>
-        <p style="color:var(--text-content-muted);margin-bottom:16px;">> Recommend: search scan to locate hidden entities</p>
-        <p style="color:var(--text-content-muted);">---</p>
-        <p style="color:var(--text-content-muted);margin-top:12px; line-height: 1.6;">
-          The system kernel identified anomalies in the sector cache. Data fragments scattered across the memory pool suggest a hidden presence. 
-          While executing routine garbage collection, the daemon process encountered an unhandled exception triggered by a malicious <span class="ghost-hidden-word">GHOST</span> entity.
-          This entity operates by intercepting DOM painting cycles and rewriting the display buffer before frames are rendered.
-          Administrators are advised to initiate a manual search protocol to isolate the rogue <span class="ghost-hidden-word">GHOST</span> thread.
-          Failure to do so will result in cascading visual artifacts and potential corruption of the active viewport.
-        </p>
-      </div>
-    </div>
-  </div>
-  `;
-};
+import { getSystemEventLogHTML, getGhostgleHTML } from '../templates.js';
+import { delay, triggerTextShatter, fadeViewOut } from '../utils.js';
 
 /**
  * Level configs for Act 1.
@@ -56,7 +29,7 @@ export const ACT1_LEVELS = [
         { label: 'Ghost in Your Browser', active: true, favicon: 'ghost' },
       ]);
       browserUI.setUrl('https://ghost.browser');
-      browserUI.setContent(getStartContent());
+      browserUI.setContent(getSystemEventLogHTML('ghost-hidden-word', true));
       
       const viewStart = document.getElementById('view-start');
       const viewGame = document.getElementById('view-game');
@@ -266,24 +239,7 @@ export const ACT1_LEVELS = [
       viewGame.scrollTop = 0;
       browserUI.setUrl('https://ghost.browser/new-tab');
       
-      viewGame.innerHTML = `
-        <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #202124; color: #e8eaed; font-family: arial, sans-serif;">
-          <div style="font-size: 80px; font-weight: bold; letter-spacing: -2px; margin-bottom: 24px; text-shadow: 0 0 20px rgba(179, 49, 241, 0.4);">
-            <span class="gg-g">G</span><span class="gg-h">h</span><span class="gg-o">o</span><span class="gg-s">s</span><span class="gg-t">t</span><span class="gg-g2">g</span><span class="gg-l">l</span><span class="gg-e">e</span>
-          </div>
-          <div style="display: flex; align-items: center; background: #303134; border: 1px solid #5f6368; border-radius: 24px; padding: 10px 20px; width: 100%; max-width: 584px; margin-bottom: 24px;">
-            <svg focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="fill: #9aa0a6; width: 20px; height: 20px; margin-right: 12px;"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path></svg>
-            <input type="text" style="background: transparent; border: none; outline: none; color: #e8eaed; width: 100%; font-size: 16px;" value="how to exorcise a browser window" readonly>
-            <div style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; margin-left: 8px;">
-              <svg viewBox="0 0 24 24" width="24" height="24" stroke="var(--ghost-color)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C7.03 2 3 6.03 3 11v11a1 1 0 0 0 1.7.7l2.3-2.3 2.3 2.3a1 1 0 0 0 1.4 0l2.3-2.3 2.3 2.3a1 1 0 0 0 1.4 0l2.3-2.3 2.3 2.3a1 1 0 0 0 1.7-.7V11c0-4.97-4.03-9-9-9z"></path></svg>
-            </div>
-          </div>
-          <div style="display: flex; gap: 12px;">
-            <button style="background: #303134; border: 1px solid #303134; border-radius: 4px; color: #e8eaed; font-family: arial, sans-serif; font-size: 14px; padding: 10px 16px; cursor: default;">Ghost Search</button>
-            <button style="background: #303134; border: 1px solid #303134; border-radius: 4px; color: #e8eaed; font-family: arial, sans-serif; font-size: 14px; padding: 10px 16px; cursor: default;">I'm Feeling Spooky</button>
-          </div>
-        </div>
-      `;
+      viewGame.innerHTML = getGhostgleHTML();
 
       const tab = browserUI.getTab(1); // The new tab
       if (tab) {
@@ -298,7 +254,7 @@ export const ACT1_LEVELS = [
       
       // Restore the old tab UI
       const viewGame = document.getElementById('view-game');
-      viewGame.innerHTML = getStartContent();
+      viewGame.innerHTML = getSystemEventLogHTML('ghost-hidden-word', true);
       viewGame.scrollTop = viewGame.scrollHeight;
       browserUI.setUrl('https://ghost.browser');
       
@@ -308,20 +264,7 @@ export const ACT1_LEVELS = [
       // Break the text and make it fall down, but ONLY the visible text in the 3rd section
       const startPages = viewGame.querySelectorAll('.start-page');
       const lastStartPage = startPages[startPages.length - 1];
-      const textNodes = lastStartPage.querySelectorAll('p, h1, span, kbd');
-      
-      textNodes.forEach((node) => {
-        // Calculate a random direction and delay for each word/paragraph
-        const delay = Math.random() * 0.4; // 0 to 0.4s delay
-        const rotate = (Math.random() - 0.5) * 60; // -30 to 30 deg rotation
-        
-        // Use a slight timeout to ensure styles apply before transition
-        setTimeout(() => {
-          node.style.transition = `transform 1.2s cubic-bezier(0.55, 0.085, 0.68, 0.53) ${delay}s, opacity 1.2s ease ${delay}s`;
-          node.style.transform = `translateY(500vh) rotate(${rotate}deg)`;
-          node.style.opacity = '0';
-        }, 50);
-      });
+      triggerTextShatter(lastStartPage);
 
       await delay(1500); // Wait for the poof animation and text fall to finish
       ghost.setState('hidden');
@@ -354,6 +297,4 @@ export const ACT1_RETRY_CHALLENGES = {
 };
 
 // Utility
-function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
+// End of ACT1 Levels

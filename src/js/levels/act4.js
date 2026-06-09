@@ -1,45 +1,7 @@
-/**
- * act4.js — Page Mastery
- */
 import * as browserUI from '../browser-ui.js';
 import * as ghost from '../ghost.js';
-
-function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
-
-const getStartContentUp = () => {
-  const selectPage = document.getElementById('start-page-2');
-  const selectPageHtml = selectPage ? selectPage.innerHTML : '';
-  return `
-    <div style="display: flex; flex-direction: column; width: 100%; height: 200%;">
-      <style>
-        #view-game .start-page { flex: 0 0 50% !important; height: 50% !important; min-height: 50% !important; }
-      </style>
-      <div class="start-page" style="justify-content: flex-start; padding-top: 60px;">
-        <div style="padding:24px; max-width: 700px; text-align: left; width: 100%;">
-          <p style="color:var(--text-content-muted);margin-bottom:16px;">&gt; System Event Log...</p>
-          <p style="color:var(--text-content-muted);margin-bottom:4px;">&gt; Process 0x8B5CF6 attempted to evade detection</p>
-          <p style="color:var(--text-content-muted);margin-bottom:4px;">&gt; Attempting visual lock... FAILED</p>
-          <p style="color:var(--color-error);margin-bottom:4px;">&gt; Target went INVISIBLE</p>
-          <p style="color:var(--text-content-muted);margin-bottom:16px;">&gt; Recommend: search scan to locate hidden entities</p>
-          <p style="color:var(--text-content-muted);">---</p>
-          <p style="color:var(--text-content-muted);margin-top:12px; line-height: 1.6;">
-            The system kernel identified anomalies in the sector cache. Data fragments scattered across the memory pool suggest a hidden presence. 
-            While executing routine garbage collection, the daemon process encountered an unhandled exception triggered by a malicious <span class="ghost-hidden-word" id="trace-1" style="background:rgba(255,255,0,0.5);color:white;padding:2px 4px;border-radius:2px;">GHOST</span> entity.
-            This entity operates by intercepting DOM painting cycles and rewriting the display buffer before frames are rendered.
-            Administrators are advised to initiate a manual search protocol to isolate the rogue <span class="ghost-hidden-word" id="trace-2" style="background:rgba(255,255,0,0.5);color:white;padding:2px 4px;border-radius:2px;">GHOST</span> thread.
-            Failure to do so will result in cascading visual artifacts and potential corruption of the active viewport.
-          </p>
-        </div>
-      </div>
-      <div class="start-page" id="start-page-2">
-        <div class="act-menu" style="width: 100%;">
-          ${selectPageHtml}
-        </div>
-      </div>
-    </div>
-  `;
-};
-
+import { getSystemEventLogHTML } from '../templates.js';
+import { delay, triggerTextShatter, fadeViewOut } from '../utils.js';
 
 export const ACT4_LEVELS = [
   {
@@ -48,7 +10,7 @@ export const ACT4_LEVELS = [
     setup() {
       browserUI.setTabs([{ label: 'Ghost in Your Browser', active: true, favicon: 'ghost' }]);
       browserUI.setUrl('https://ghost.browser');
-      browserUI.setContent(getStartContentUp());
+      browserUI.setContent(getSystemEventLogHTML('trace', true));
       
       const content = document.getElementById('view-game');
       content.scrollTop = content.scrollHeight; // Scroll down to the Select Operation page
@@ -94,25 +56,7 @@ export const ACT4_LEVELS = [
         ghostDOM.style.zIndex = '';
       }
       
-      browserUI.setContent(`
-        <div class="start-page" style="justify-content: flex-start; padding-top: 60px; height: 100%; width: 100%;">
-          <div style="padding:24px; max-width: 700px; text-align: left; width: 100%;">
-            <p style="color:var(--text-content-muted);margin-bottom:16px;">&gt; System Event Log...</p>
-            <p style="color:var(--text-content-muted);margin-bottom:4px;">&gt; Process 0x8B5CF6 attempted to evade detection</p>
-            <p style="color:var(--text-content-muted);margin-bottom:4px;">&gt; Attempting visual lock... FAILED</p>
-            <p style="color:var(--color-error);margin-bottom:4px;">&gt; Target went INVISIBLE</p>
-            <p style="color:var(--text-content-muted);margin-bottom:16px;">&gt; Recommend: search scan to locate hidden entities</p>
-            <p style="color:var(--text-content-muted);">---</p>
-            <p style="color:var(--text-content-muted);margin-top:12px; line-height: 1.6;">
-              The system kernel identified anomalies in the sector cache. Data fragments scattered across the memory pool suggest a hidden presence. 
-              While executing routine garbage collection, the daemon process encountered an unhandled exception triggered by a malicious <span class="ghost-hidden-word" id="trace-1" style="background:var(--ghost-color);color:white;padding:2px 4px;border-radius:2px;">GHOST</span> entity.
-              This entity operates by intercepting DOM painting cycles and rewriting the display buffer before frames are rendered.
-              Administrators are advised to initiate a manual search protocol to isolate the rogue <span class="ghost-hidden-word" id="trace-2" style="background:rgba(255,255,0,0.5);color:white;padding:2px 4px;border-radius:2px;">GHOST</span> thread.
-              Failure to do so will result in cascading visual artifacts and potential corruption of the active viewport.
-            </p>
-          </div>
-        </div>
-      `);
+      browserUI.setContent(getSystemEventLogHTML('trace', false));
       
       const trace2 = document.getElementById('trace-2');
       if (trace2) {

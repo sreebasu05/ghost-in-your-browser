@@ -87,6 +87,12 @@ function checkMobileUserAgent() {
     if (guidelinesText) {
       guidelinesText.innerHTML = '<strong>This game requires a keyboard.</strong> Please open this page on a desktop computer to play.';
     }
+    
+    // Hide operations header and acts grid
+    const label = document.querySelector('.act-menu-label');
+    const grid = document.querySelector('.act-grid');
+    if (label) label.style.display = 'none';
+    if (grid) grid.style.display = 'none';
   }
 }
 
