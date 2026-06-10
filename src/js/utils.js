@@ -25,6 +25,4 @@ export async function fadeViewOut(viewElement, duration = 2000) {
   viewElement.style.transition = `opacity ${duration / 1000}s ease-in-out`;
   viewElement.style.opacity = '0';
   await delay(duration);
-  viewElement.style.opacity = '1';
-  viewElement.style.transition = '';
 }

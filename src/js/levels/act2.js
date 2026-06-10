@@ -19,42 +19,32 @@ export const ACT2_LEVELS = [
       browserUI.setContent(wrapSelectPageHTML());
       
       const ghostEl = document.getElementById('ghost');
-      ghost.show();
-      ghost.setState('screensaver');
 
-      // Slowly open 1 new tab (Ghostgle)
-      (async () => {
-        await delay(1000);
-        browserUI.addTab('Ghostgle', false);
-        await delay(1000);
-
-        if (ghostEl) {
-            // Get the current position of the screensaver ghost
-            const rect = ghostEl.getBoundingClientRect();
-            const parentRect = ghostEl.parentElement.getBoundingClientRect();
-            
-            // Temporarily set the position inline to freeze it where it is
-            ghostEl.style.transition = 'none';
-            ghostEl.style.left = (rect.left - parentRect.left) + 'px';
-            ghostEl.style.top = (rect.top - parentRect.top) + 'px';
-            ghostEl.style.transform = 'none';
-            
-            // Remove screensaver class
-            ghostEl.classList.remove('ghost--screensaver');
-            
-            // Force reflow
-            void ghostEl.offsetWidth;
-            
-            // Restore transitions
-            ghostEl.style.transition = '';
-        }
-        const tab = browserUI.getTab(1);
-        if (tab) {
-          ghost.moveTo(tab, 'on');
-        }
-        browserUI.infectTab(1);
+      if (!window.__isActTransition) {
+        ghost.show();
         ghost.setState('idle');
-      })();
+
+        // Slowly open 1 new tab (Ghostgle)
+        (async () => {
+          await delay(1000);
+          browserUI.addTab('Ghostgle', false);
+          await delay(1000);
+
+          const tab = browserUI.getTab(1);
+          if (tab && ghostEl) {
+            ghostEl.style.transition = 'left 1.5s ease-in-out, top 1.5s ease-in-out';
+            ghost.moveTo(tab, 'on');
+          }
+          browserUI.infectTab(1);
+        })();
+      } else {
+        // During initial Act transition: open the tab but let startDisruption move the ghost
+        (async () => {
+          await delay(1000);
+          browserUI.addTab('Ghostgle', false);
+          browserUI.infectTab(1);
+        })();
+      }
     },
     async onSuccess() {
       // User is now on Ghostgle

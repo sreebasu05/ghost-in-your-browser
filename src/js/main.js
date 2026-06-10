@@ -70,6 +70,7 @@ function initStartScreen() {
 
   // Start ghost screensaver
   ghost.initGhost(document.getElementById('ghost'));
+  ghost.resetGhostStyles();
   ghost.show();
   ghost.setState('screensaver');
 
@@ -181,10 +182,13 @@ function handleStartKey(e) {
   // Handle Spacebar to scroll down to the options
   if (e.code === 'Space') {
     e.preventDefault();
-    document.getElementById('view-start').scrollTo({
-      top: document.getElementById('view-start').scrollHeight,
-      behavior: 'smooth'
-    });
+    const page2 = document.getElementById('start-page-2');
+    if (page2) {
+      document.getElementById('view-start').scrollTo({
+        top: page2.offsetTop,
+        behavior: 'smooth'
+      });
+    }
     return;
   }
   
@@ -225,12 +229,21 @@ function handleStartKey(e) {
 // ==========================================
 
 function startDisruption(actId) {
+  // Set transition flag
+  window.__isActTransition = true;
+
   // Hide the real cursor immediately
   document.body.style.cursor = 'none';
 
   // Spawn the fake real-browser cursor drifting away
   const fakeCursor = document.getElementById('real-browser-cursor');
   fakeCursor.classList.remove('hidden');
+
+  // Show the disconnected mouse badge
+  const mouseBadge = document.getElementById('real-mouse-badge');
+  if (mouseBadge) {
+    mouseBadge.classList.remove('hidden');
+  }
 
   // Open devtools panel and challenge bar smoothly right away
   document.getElementById('devtools-panel').classList.add('is-open');
@@ -240,54 +253,91 @@ function startDisruption(actId) {
   const devtoolsLogs = document.getElementById('devtools-logs');
   if (devtoolsLogs) {
     devtoolsLogs.innerHTML = '';
-    logToConsole(null, 'ERROR: MOUSE SPOOKED.', 'error');
+    logToConsole(null, 'ERROR: MOUSE DISCONNECTED', 'error');
   }
 
-  // Delay the ghost's descent so the user sees the log first
+  // Freeze screensaver ghost immediately
+  const ghostEl = document.getElementById('ghost');
+  if (ghostEl && ghostEl.classList.contains('ghost--screensaver')) {
+    const rect = ghostEl.getBoundingClientRect();
+    const parentRect = ghostEl.parentElement.getBoundingClientRect();
+    
+    // Lock it to its exact current pixel position so it doesn't snap
+    ghostEl.style.left = (rect.left - parentRect.left) + 'px';
+    ghostEl.style.top = (rect.top - parentRect.top) + 'px';
+    ghostEl.style.transform = 'none';
+    
+    // Remove screensaver animation
+    ghostEl.classList.remove('ghost--screensaver');
+    void ghostEl.offsetWidth; // Force reflow
+  }
+
+  // Transition view to game page immediately so content and URL are displayed under the ghost
+  window.__savedScrollTop = document.getElementById('view-start').scrollTop;
+  showView('game');
+  startGame(actId);
+
+  // Delay the ghost's slow descent and logs
   setTimeout(() => {
     if (devtoolsLogs) {
       logToConsole(null, 'Ghost detection scanner active. Monitoring keystrokes...', 'info');
+      logToConsole(null, 'WARNING: Hostile entity hijacking rendering pipeline...', 'fail');
     }
 
-    // Freeze or animate screensaver ghost
-    const ghostEl = document.getElementById('ghost');
-    if ((actId === 'act1' || actId === 'act3' || actId === 'act4') && ghostEl && ghostEl.classList.contains('ghost--screensaver')) {
-      // Get current computed position
-      const rect = ghostEl.getBoundingClientRect();
-      const parentRect = ghostEl.parentElement.getBoundingClientRect();
+    if (ghostEl) {
+      ghostEl.style.transition = 'top 4.0s ease-in-out, left 4.0s ease-in-out';
       
-      // Lock it to its exact current pixel position so it doesn't snap
-      ghostEl.style.left = (rect.left - parentRect.left) + 'px';
-      ghostEl.style.top = (rect.top - parentRect.top) + 'px';
-      ghostEl.style.transform = 'none';
-      
-      // Remove screensaver animation
-      ghostEl.classList.remove('ghost--screensaver');
-      
-      // Force a reflow
-      void ghostEl.offsetWidth;
-      
-      if (actId === 'act1' || actId === 'act4') {
-        // Smoothly translate off-screen
-        ghostEl.style.transition = 'top 2.5s ease-in-out, left 2.5s ease-in-out';
-        if (actId === 'act1') {
-          ghostEl.style.top = (parentRect.height + 400) + 'px'; // way below screen
-        } else {
-          ghostEl.style.zIndex = '9'; // behind toolbar/titlebar
-          ghostEl.style.top = '-400px'; // way above screen
+      if (actId === 'act1') {
+        ghostEl.style.top = '120vh'; // Translate below viewport
+        logToConsole(null, 'WARNING: Entity moving below fold. Page corrupted.', 'fail');
+      } else if (actId === 'act2') {
+        const tab = browserUI.getTab(0);
+        if (tab) {
+          ghost.moveTo(tab, 'on');
         }
+        logToConsole(null, 'WARNING: Entity nesting in active tab strip.', 'fail');
+        
+        // After tab is added at 1000ms, move the ghost to the new tab (tab index 1)
+        setTimeout(() => {
+          const tab1 = browserUI.getTab(1);
+          if (tab1) {
+            ghost.moveTo(tab1, 'on');
+          }
+        }, 1100);
+      } else if (actId === 'act3') {
+        const swipeBack = document.getElementById('swipe-back-indicator');
+        if (swipeBack) {
+          swipeBack.classList.add('show');
+          ghost.moveTo(swipeBack, 'on');
+        }
+        logToConsole(null, 'WARNING: Entity retreating to previous page.', 'fail');
+
+        // Move off-screen left after 1500ms
+        setTimeout(() => {
+          if (ghostEl) {
+            ghostEl.style.left = '-150px';
+          }
+        }, 1500);
+      } else if (actId === 'act4') {
+        ghostEl.style.zIndex = '9'; // behind toolbar/titlebar
+        ghostEl.style.top = '-400px'; // way above screen
+        logToConsole(null, 'WARNING: Entity ascending to window header.', 'fail');
       }
     }
 
-    // After 2.5 seconds, start the game
+    // After 4.0 seconds, complete the transition, hide fake cursor/mouse badge and enable gameplay
     setTimeout(() => {
-      // Hide the drifting cursor when it finishes animating
       fakeCursor.classList.add('hidden');
-      window.__savedScrollTop = document.getElementById('view-start').scrollTop;
-      showView('game');
-      startGame(actId);
-    }, 2500);
-  }, 2000); // 2-second delay for mouse drift before ghost goes down
+      if (mouseBadge) {
+        mouseBadge.classList.add('hidden');
+      }
+      window.__isActTransition = false;
+      
+      import('./game.js').then(game => {
+        game.endTransitionBlock();
+      });
+    }, 4000);
+  }, 500);
 }
 
 // ==========================================

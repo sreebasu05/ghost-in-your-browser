@@ -1,6 +1,6 @@
 import * as browserUI from '../browser-ui.js';
 import * as ghost from '../ghost.js';
-import { getSystemEventLogHTML } from '../templates.js';
+import { getSystemEventLogHTML, wrapSelectPageHTML } from '../templates.js';
 import { delay, triggerTextShatter, fadeViewOut } from '../utils.js';
 
 export const ACT4_LEVELS = [
@@ -10,19 +10,42 @@ export const ACT4_LEVELS = [
     setup() {
       browserUI.setTabs([{ label: 'Ghost in Your Browser', active: true, favicon: 'ghost' }]);
       browserUI.setUrl('https://ghost.browser');
-      browserUI.setContent(getSystemEventLogHTML('trace', true));
       
       const content = document.getElementById('view-game');
-      content.scrollTop = content.scrollHeight; // Scroll down to the Select Operation page
+      if (window.__isActTransition) {
+        browserUI.setContent(wrapSelectPageHTML());
+        content.scrollTop = 0; // Keep at the top (Select Operation menu) during transition
+        
+        // When transition completes, load the scrollable Event Log and scroll to the bottom
+        setTimeout(() => {
+          browserUI.setContent(getSystemEventLogHTML('trace', true, true));
+          const scrollBottom = () => {
+            content.scrollTop = 99999;
+          };
+          scrollBottom();
+          setTimeout(scrollBottom, 50);
+          setTimeout(scrollBottom, 150);
+        }, 4000);
+      } else {
+        browserUI.setContent(getSystemEventLogHTML('trace', true, true));
+        const scrollBottom = () => {
+          content.scrollTop = 99999;
+        };
+        scrollBottom();
+        setTimeout(scrollBottom, 50);
+        setTimeout(scrollBottom, 150);
+      }
       
-      ghost.setState('hidden');
+      if (!window.__isActTransition) {
+        ghost.setState('hidden');
+      }
       const ghostDOM = document.getElementById('ghost');
       if (ghostDOM) {
         ghostDOM.style.zIndex = '9'; // Send behind toolbar/titlebar
       }
     },
     async onSuccess() {
-      await browserUI.scrollUpContent();
+      await browserUI.scrollUpContent(); // Scroll up to the Select Operation page at the top
       
       const target = document.getElementById('trace-2');
       const content = document.getElementById('view-game');
@@ -58,8 +81,19 @@ export const ACT4_LEVELS = [
       
       browserUI.setContent(getSystemEventLogHTML('trace', false));
       
+      const trace1 = document.getElementById('trace-1');
       const trace2 = document.getElementById('trace-2');
+      if (trace1) {
+        trace1.style.background = 'var(--ghost-color)';
+        trace1.style.color = 'white';
+        trace1.style.padding = '2px 4px';
+        trace1.style.borderRadius = '3px';
+      }
       if (trace2) {
+        trace2.style.background = 'rgba(255, 255, 0, 0.5)';
+        trace2.style.color = 'black';
+        trace2.style.padding = '2px 4px';
+        trace2.style.borderRadius = '3px';
         ghost.moveTo(trace2, 'on');
       }
       ghost.show();
@@ -69,10 +103,12 @@ export const ACT4_LEVELS = [
       const trace1 = document.getElementById('trace-1');
       const trace2 = document.getElementById('trace-2');
       if (trace1) {
-        trace1.style.background = 'rgba(255,255,0,0.5)';
+        trace1.style.background = 'rgba(255, 255, 0, 0.5)';
+        trace1.style.color = 'black';
       }
       if (trace2) {
         trace2.style.background = 'var(--ghost-color)';
+        trace2.style.color = 'white';
         ghost.moveTo(trace2, 'on');
       }
       await ghost.playHit();
@@ -80,9 +116,15 @@ export const ACT4_LEVELS = [
       browserUI.hideFindBar();
       if (trace1) {
         trace1.style.background = '';
+        trace1.style.color = '';
+        trace1.style.padding = '';
+        trace1.style.borderRadius = '';
       }
       if (trace2) {
         trace2.style.background = '';
+        trace2.style.color = '';
+        trace2.style.padding = '';
+        trace2.style.borderRadius = '';
       }
       
       ghost.setState('panic');

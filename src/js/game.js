@@ -9,6 +9,7 @@ import { getShortcutById, getPlatform, renderCreatureText } from '../data/shortc
 import { calculateScore, calculateStars, renderStars } from './scoring.js';
 import * as ghost from './ghost.js';
 import * as browserUI from './browser-ui.js';
+import { getGhostgleHTML } from './templates.js';
 import { ACT1_LEVELS, ACT1_RETRY_CHALLENGES } from './levels/act1.js';
 import { ACT2_LEVELS, ACT2_RETRY_CHALLENGES } from './levels/act2.js';
 import { ACT3_LEVELS, ACT3_RETRY_CHALLENGES } from './levels/act3.js';
@@ -82,6 +83,12 @@ export function startAct(actId, onWin) {
   cacheDom();
   browserUI.initBrowserUI();
   ghost.initGhost(document.getElementById('ghost'));
+
+  const viewGame = document.getElementById('view-game');
+  if (viewGame) {
+    viewGame.style.opacity = '';
+    viewGame.style.transition = '';
+  }
 
   if (actId === 'act1') {
     state.levels = ACT1_LEVELS;
@@ -171,6 +178,10 @@ function startLevel() {
     state.isAnimating = true;
     setupPromise.then(() => {
       if (!state.isActive) return;
+      if (window.__isActTransition) {
+        // Leave isAnimating as true, transition will call endTransitionBlock()
+        return;
+      }
       state.isAnimating = false;
       state.levelStartTime = Date.now();
       
@@ -180,12 +191,19 @@ function startLevel() {
       }
     });
   } else {
-    state.isAnimating = false;
-    state.levelStartTime = Date.now();
+    if (window.__isActTransition) {
+      state.isAnimating = true;
+    } else {
+      state.isAnimating = false;
+      state.levelStartTime = Date.now();
+    }
     
-    logToConsole(null, `[SYSTEM] ${challengeStr}`, 'info');
-    if (platform === 'mac' && shortcut.keys[platform].mods.includes('ctrl')) {
-      logToConsole(null, `[WARNING] macOS: In this one, use Ctrl instead of Cmd`, 'fail');
+    // If not in transition, log immediately, otherwise endTransitionBlock will log
+    if (!window.__isActTransition) {
+      logToConsole(null, `[SYSTEM] ${challengeStr}`, 'info');
+      if (platform === 'mac' && shortcut.keys[platform].mods.includes('ctrl')) {
+        logToConsole(null, `[WARNING] macOS: In this one, use Ctrl instead of Cmd`, 'fail');
+      }
     }
   }
 
@@ -253,6 +271,50 @@ function onKeyDown(e, level) {
       if (matchesShortcut(e, nextTabKeys, 'next_tab', platform) || matchesShortcut(e, prevTabKeys, 'prev_tab', platform)) {
         handleJumpTabCheat(e);
         return;
+      }
+
+      // If they press a wrong number key (Cmd+1 to Cmd+8)
+      if (e.metaKey || e.ctrlKey) {
+        const num = parseInt(e.key);
+        if (num >= 1 && num <= 8) {
+          e.preventDefault();
+          handleFail(e);
+
+          // Update active tab in the browser UI
+          const allTabs = document.querySelectorAll('.tab');
+          const tabObjects = Array.from(allTabs).map((tab, i) => {
+            return {
+              label: tab.querySelector('.tab-label').textContent,
+              active: i === (num - 1),
+              infected: tab.classList.contains('infected'),
+              favicon: 'ghost'
+            };
+          });
+          browserUI.setTabs(tabObjects);
+
+          // Update content and URL
+          if (num === 1) {
+            const selectPage = document.getElementById('start-page-2');
+            if (selectPage) {
+              browserUI.setContent(`
+                <div class="start-page" style="height: 100%; min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                  ${selectPage.innerHTML}
+                </div>
+              `);
+            }
+            browserUI.setUrl('chrome://newtab/');
+          } else {
+            browserUI.setContent(getGhostgleHTML());
+            browserUI.setUrl('https://ghost.browser/new-tab');
+          }
+
+          // Move ghost back to its infected tab
+          const infectedTab = document.querySelector('.tab.infected');
+          if (infectedTab) {
+            ghost.moveTo(infectedTab, 'on');
+          }
+          return;
+        }
       }
     }
 
@@ -355,16 +417,16 @@ async function handleSuccess(level, e) {
   state.power = Math.max(0, state.power - powerDrain);
   updatePower();
 
-  // Play level success animation first
-  if (level.onSuccess) {
-    await level.onSuccess();
-  }
-
-  // Show success in DevTools console after action completes
+  // Show success in DevTools console first
   const platform = getPlatform();
   const keysStr = e ? formatKeyCombo(e) : state.currentShortcut.keys[platform].display;
   const actionStr = state.currentShortcut.action;
   logToConsole(keysStr, actionStr, 'success');
+
+  // Play level success animation next
+  if (level.onSuccess) {
+    await level.onSuccess();
+  }
 
   // Advance to next level after a snappy delay
   await delay(500);
@@ -437,7 +499,7 @@ function handleJumpTabCheat(e) {
   let currentIndex = currentGhostTab ? parseInt(currentGhostTab.dataset.index || '4') : 4;
   
   let jumpTo = (currentIndex + 2) % 8;
-  while (jumpTo === currentIndex || jumpTo === activeIndex) {
+  while (jumpTo === currentIndex || jumpTo === activeIndex || jumpTo === 0) {
     jumpTo = (jumpTo + 1) % 8;
   }
   
@@ -711,10 +773,10 @@ function handleWin() {
     ghost.playCaptured();
   }
 
-  // Delay to let the new burst animation finish (approx 1.5 - 2s)
+  // Delay to let the new burst animation finish and final logs to be read (approx 2s)
   setTimeout(() => {
     if (state.onWin) state.onWin();
-  }, ghostEl.className.includes('ghost--hidden') ? 0 : 2000);
+  }, 2000);
 }
 
 // ==========================================
@@ -732,4 +794,18 @@ function shuffle(arr) {
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
+}
+
+export function endTransitionBlock() {
+  state.isAnimating = false;
+  state.levelStartTime = Date.now();
+  const level = state.levels[state.currentLevelIndex];
+  if (level) {
+    const shortcut = getShortcutById(level.shortcutId);
+    const platform = getPlatform();
+    logToConsole(null, `[SYSTEM] ${level.challenge}`, 'info');
+    if (platform === 'mac' && shortcut.keys[platform].mods.includes('ctrl')) {
+      logToConsole(null, `[WARNING] macOS: In this one, use Ctrl instead of Cmd`, 'fail');
+    }
+  }
 }

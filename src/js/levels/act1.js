@@ -31,10 +31,15 @@ export const ACT1_LEVELS = [
       browserUI.setUrl('https://ghost.browser');
       browserUI.setContent(getSystemEventLogHTML('ghost-hidden-word', true));
       
-      const viewStart = document.getElementById('view-start');
       const viewGame = document.getElementById('view-game');
-      viewGame.scrollTop = window.__savedScrollTop !== undefined ? window.__savedScrollTop : viewStart.scrollTop;
+      viewGame.scrollTop = 0; // Start at the Select Operation menu
       viewGame.classList.remove('distorted-page');
+      viewGame.style.opacity = '';
+      viewGame.style.transition = '';
+      
+      if (!window.__isActTransition) {
+        ghost.setState('hidden');
+      }
     },
     async onSuccess() {
       await browserUI.scrollContent();
@@ -54,9 +59,10 @@ export const ACT1_LEVELS = [
         { label: 'Ghost in Your Browser', active: true, favicon: 'ghost' },
       ]);
       browserUI.setUrl('https://ghost.browser');
+      browserUI.setContent(getSystemEventLogHTML('ghost-hidden-word', true));
       
       const viewGame = document.getElementById('view-game');
-      viewGame.scrollTop = viewGame.scrollHeight;
+      viewGame.scrollTop = viewGame.scrollHeight; // Keep it focused below at the system logs
       viewGame.classList.remove('distorted-page');
       
       ghost.setState('hidden');
@@ -247,9 +253,30 @@ export const ACT1_LEVELS = [
       }
       ghost.show();
       ghost.setState('idle');
+
+      // Make the ghost and browser shiver intensely
+      const ghostDOM = document.getElementById('ghost');
+      if (ghostDOM) {
+        ghostDOM.classList.add('ghost-shiver-intense');
+      }
+      const browserEl = document.getElementById('game-browser');
+      if (browserEl) {
+        browserEl.classList.add('browser-shiver-intense');
+      }
     },
     async onSuccess() {
       import('../game.js').then(game => game.stopMouseTracking()); // Dynamically import to avoid circular dependency issues if any
+      
+      // Stop shivering when closed
+      const ghostDOM = document.getElementById('ghost');
+      if (ghostDOM) {
+        ghostDOM.classList.remove('ghost-shiver-intense');
+      }
+      const browserEl = document.getElementById('game-browser');
+      if (browserEl) {
+        browserEl.classList.remove('browser-shiver-intense');
+      }
+
       await browserUI.removeTab(1); // Close the new tab
       
       // Restore the old tab UI
@@ -274,10 +301,6 @@ export const ACT1_LEVELS = [
       viewGame.style.opacity = '0';
       
       await delay(2000); // Wait for the fade out to finish
-      
-      // Reset opacity for future play-throughs just in case
-      viewGame.style.opacity = '1';
-      viewGame.style.transition = '';
     },
   },
 ];

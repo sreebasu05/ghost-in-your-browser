@@ -2,37 +2,41 @@
  * templates.js — Reusable HTML layouts
  */
 
-export function getSystemEventLogHTML(ghostWordId = '', isScrollable = false) {
+export function getSystemEventLogHTML(ghostWordId = '', isScrollable = false, reverseOrder = false) {
   const idAttr1 = ghostWordId ? `id="${ghostWordId}-1"` : '';
   const idAttr2 = ghostWordId ? `id="${ghostWordId}-2"` : '';
-  const heightStyle = isScrollable ? 'height: 300%;' : 'height: 200%;';
+  const heightStyle = isScrollable ? 'height: 200%;' : 'height: 100%;';
   const selectPage = document.getElementById('start-page-2');
   const selectPageHtml = selectPage ? selectPage.innerHTML : '';
+
+  const eventLogHtml = `
+    <div class="start-page" style="justify-content: flex-start; padding-top: 60px;">
+      <div style="padding:24px; max-width: 700px; text-align: left; width: 100%;">
+        <p style="color:var(--text-content-muted);margin-bottom:16px;">&gt; System Event Log...</p>
+        <p style="color:var(--text-content-muted);margin-bottom:4px;">&gt; Process 0x8B5CF6 attempted to evade detection</p>
+        <p style="color:var(--text-content-muted);margin-bottom:4px;">&gt; Attempting visual lock... FAILED</p>
+        <p style="color:var(--color-error);margin-bottom:4px;">&gt; Target went INVISIBLE</p>
+        <p style="color:var(--text-content-muted);margin-bottom:16px;">&gt; Recommend: search scan to locate hidden entities</p>
+        <p style="color:var(--text-content-muted);">---</p>
+        <p style="color:var(--text-content-muted);margin-top:12px; line-height: 1.6;">
+          The system kernel identified anomalies in the sector cache. Data fragments scattered across the memory pool suggest a hidden presence. 
+          While executing routine garbage collection, the daemon process encountered an unhandled exception triggered by a malicious <span class="ghost-hidden-word" ${idAttr1}>GHOST</span> entity.
+          This entity operates by intercepting DOM painting cycles and rewriting the display buffer before frames are rendered.
+          Administrators are advised to initiate a manual search protocol to isolate the rogue <span class="ghost-hidden-word" ${idAttr2}>GHOST</span> thread.
+          Failure to do so will result in cascading visual artifacts and potential corruption of the active viewport.
+        </p>
+      </div>
+    </div>`;
+
+  const selectPageWrapperHtml = isScrollable ? `<div class="start-page" id="start-page-2"><div class="act-menu" style="width: 100%;">${selectPageHtml}</div></div>` : '';
 
   return `
     <div style="display: flex; flex-direction: column; width: 100%; ${heightStyle}">
       <style>
-        #view-game .start-page { flex: 0 0 50% !important; height: 50% !important; min-height: 50% !important; }
-        ${isScrollable ? '#view-game .start-page { flex: 0 0 33.333% !important; height: 33.333% !important; min-height: 33.333% !important; }' : ''}
+        #view-game .start-page { flex: 0 0 100% !important; height: 100% !important; min-height: 100% !important; }
+        ${isScrollable ? '#view-game .start-page { flex: 0 0 50% !important; height: 50% !important; min-height: 50% !important; }' : ''}
       </style>
-      <div class="start-page" style="justify-content: flex-start; padding-top: 60px;">
-        <div style="padding:24px; max-width: 700px; text-align: left; width: 100%;">
-          <p style="color:var(--text-content-muted);margin-bottom:16px;">&gt; System Event Log...</p>
-          <p style="color:var(--text-content-muted);margin-bottom:4px;">&gt; Process 0x8B5CF6 attempted to evade detection</p>
-          <p style="color:var(--text-content-muted);margin-bottom:4px;">&gt; Attempting visual lock... FAILED</p>
-          <p style="color:var(--color-error);margin-bottom:4px;">&gt; Target went INVISIBLE</p>
-          <p style="color:var(--text-content-muted);margin-bottom:16px;">&gt; Recommend: search scan to locate hidden entities</p>
-          <p style="color:var(--text-content-muted);">---</p>
-          <p style="color:var(--text-content-muted);margin-top:12px; line-height: 1.6;">
-            The system kernel identified anomalies in the sector cache. Data fragments scattered across the memory pool suggest a hidden presence. 
-            While executing routine garbage collection, the daemon process encountered an unhandled exception triggered by a malicious <span class="ghost-hidden-word" ${idAttr1}>GHOST</span> entity.
-            This entity operates by intercepting DOM painting cycles and rewriting the display buffer before frames are rendered.
-            Administrators are advised to initiate a manual search protocol to isolate the rogue <span class="ghost-hidden-word" ${idAttr2}>GHOST</span> thread.
-            Failure to do so will result in cascading visual artifacts and potential corruption of the active viewport.
-          </p>
-        </div>
-      </div>
-      ${isScrollable ? selectPageHtml : ''}
+      ${reverseOrder ? eventLogHtml + selectPageWrapperHtml : selectPageWrapperHtml + eventLogHtml}
     </div>`;
 }
 
@@ -98,6 +102,55 @@ export function getGibberishHTML(isIncognito = false) {
         <p style="color: ${textColor}; font-size: 14px; text-align: center; max-width: 500px; line-height: 1.6;">
           ERR_CORRUPT_HISTORY: Memory pointer out of bounds. The previous session is glitched. Exorcise the rendering pipeline.
         </p>
+      </div>
+    </div>`;
+}
+
+export function getNewTabHTML() {
+  return `
+    <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #18181c; color: #fff; font-family: 'Inter', sans-serif; padding: 20px; box-sizing: border-box; user-select: none;">
+      <div style="font-size: 54px; font-weight: 700; margin-bottom: 30px; letter-spacing: -1.5px; background: linear-gradient(90deg, #B331F1, #da7dfc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 15px rgba(179,49,241,0.25)); font-family: 'JetBrains Mono', monospace;">
+        New Tab
+      </div>
+      <div style="display: flex; align-items: center; background: #222227; border: 1px solid rgba(255,255,255,0.06); border-radius: 28px; padding: 12px 24px; width: 100%; max-width: 500px; margin-bottom: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#666" stroke-width="2.5" style="margin-right: 12px;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" placeholder="Search the web or type a URL" style="background: transparent; border: none; outline: none; color: #fff; width: 100%; font-size: 15px;" readonly>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; width: 100%; max-width: 440px;">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: #222227; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 1px solid rgba(255,255,255,0.06);">🐈</div>
+          <span style="font-size: 11px; color: #888;">GitHub</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: #222227; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 1px solid rgba(255,255,255,0.06);">📺</div>
+          <span style="font-size: 11px; color: #888;">YouTube</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: #222227; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 1px solid rgba(255,255,255,0.06);">💬</div>
+          <span style="font-size: 11px; color: #888;">Discord</span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: #222227; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 1px solid rgba(255,255,255,0.06);">👻</div>
+          <span style="font-size: 11px; color: #888;">Ghost</span>
+        </div>
+      </div>
+    </div>`;
+}
+
+export function getIncognitoPageHTML() {
+  return `
+    <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0c0a0f; color: #e2dcf0; font-family: 'Inter', sans-serif; padding: 40px; box-sizing: border-box; text-align: center; position: relative; user-select: none;">
+      <div style="background: rgba(179, 49, 241, 0.08); border: 1px solid rgba(179, 49, 241, 0.2); border-radius: 50%; width: 72px; height: 72px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 0 25px rgba(179, 49, 241, 0.25);">
+        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#B331F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v4.5"></path><path d="M12 10.5v8"></path><circle cx="7" cy="14" r="3.5"></circle><circle cx="17" cy="14" r="3.5"></circle><path d="M10.5 14h3"></path><path d="M2 10.5h20"></path></svg>
+      </div>
+      <h2 style="font-size: 26px; font-weight: 600; margin-bottom: 12px; color: #fff; letter-spacing: -0.5px; font-family: 'JetBrains Mono', monospace;">You've gone incognito</h2>
+      <p style="font-size: 13px; color: #a49db2; max-width: 520px; line-height: 1.6; margin-bottom: 30px;">
+        Now you can browse privately, and other people who use this device won't see your activity. However, downloads, bookmarks and reading list items will still be saved.
+      </p>
+      
+      <!-- Ghost containment area -->
+      <div class="incognito-container" style="position: relative; display: flex; align-items: center; justify-content: center; width: 140px; height: 140px; border: 2px dashed rgba(179, 49, 241, 0.3); border-radius: 12px; background: rgba(179, 49, 241, 0.02); margin-top: 10px;">
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 9px; color: rgba(179, 49, 241, 0.5); font-weight: bold; letter-spacing: 1.5px; position: absolute; bottom: 12px;">CONTAINMENT ZONE</span>
       </div>
     </div>`;
 }

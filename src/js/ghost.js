@@ -15,6 +15,18 @@ let ghostEl = null;
  */
 export function initGhost(element) {
   ghostEl = element;
+}
+
+export function resetGhostStyles() {
+  if (ghostEl) {
+    ghostEl.style.top = '';
+    ghostEl.style.left = '';
+    ghostEl.style.opacity = '';
+    ghostEl.style.zIndex = '';
+    ghostEl.style.transform = '';
+    ghostEl.style.transition = '';
+    ghostEl.classList.remove('ghost-shiver-intense', 'incognito-shiver');
+  }
   setState('hidden');
 }
 

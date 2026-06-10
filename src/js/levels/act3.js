@@ -3,7 +3,7 @@
  */
 import * as browserUI from '../browser-ui.js';
 import * as ghost from '../ghost.js';
-import { wrapSelectPageHTML, getGibberishHTML } from '../templates.js';
+import { wrapSelectPageHTML, getGibberishHTML, getNewTabHTML, getIncognitoPageHTML, getGhostgleHTML } from '../templates.js';
 import { delay, triggerTextShatter } from '../utils.js';
 
 export const ACT3_LEVELS = [
@@ -25,43 +25,29 @@ export const ACT3_LEVELS = [
       if (ghostEl) {
         ghostEl.classList.remove('incognito-shiver');
       }
-      ghost.show();
-      ghost.setState('idle');
-      
-      // Wait a bit for initial frame before starting animation
-      await delay(500);
+      if (!window.__isActTransition) {
+        ghost.show();
+        ghost.setState('idle');
+        
+        // Wait a bit for initial frame before starting animation
+        await delay(500);
 
-      const swipeBack = document.getElementById('swipe-back-indicator');
-      if (swipeBack && ghostEl) {
-        swipeBack.classList.add('show');
-        
-        // 1. Move onto the left swipe indicator arrow slowly
-        ghostEl.style.transition = 'left 2.5s ease-in-out, top 2.5s ease-in-out';
-        ghost.moveTo(swipeBack, 'on');
-        
-        await new Promise(resolve => {
-          const handler = (e) => {
-            if (e.propertyName === 'left') {
-              ghostEl.removeEventListener('transitionend', handler);
-              resolve();
-            }
-          };
-          ghostEl.addEventListener('transitionend', handler);
-        });
+        const swipeBack = document.getElementById('swipe-back-indicator');
+        if (swipeBack && ghostEl) {
+          swipeBack.classList.add('show');
+          
+          // 1. Move onto the left swipe indicator arrow slowly
+          ghostEl.style.transition = 'left 2.5s ease-in-out, top 2.5s ease-in-out';
+          ghost.moveTo(swipeBack, 'on');
+          
+          await delay(2500);
 
-        // 2. Continue slowly off-screen left
-        ghostEl.style.transition = 'left 2.5s ease-in-out, top 2.5s ease-in-out';
-        ghostEl.style.left = '-150px';
-        
-        await new Promise(resolve => {
-          const handler = (e) => {
-            if (e.propertyName === 'left') {
-              ghostEl.removeEventListener('transitionend', handler);
-              resolve();
-            }
-          };
-          ghostEl.addEventListener('transitionend', handler);
-        });
+          // 2. Continue slowly off-screen left
+          ghostEl.style.transition = 'left 2.5s ease-in-out, top 2.5s ease-in-out';
+          ghostEl.style.left = '-150px';
+          
+          await delay(2500);
+        }
       }
     },
     async onSuccess() {
@@ -115,32 +101,19 @@ export const ACT3_LEVELS = [
         ghostEl.style.transition = 'left 2.5s ease-in-out, top 2.5s ease-in-out';
         ghost.moveTo(swipeForward, 'on');
         
-        await new Promise(resolve => {
-          const handler = (e) => {
-            if (e.propertyName === 'left') {
-              ghostEl.removeEventListener('transitionend', handler);
-              resolve();
-            }
-          };
-          ghostEl.addEventListener('transitionend', handler);
-        });
+        await delay(2500);
 
         // 2. Continue slowly off-screen right
         ghostEl.style.transition = 'left 2.5s ease-in-out, top 2.5s ease-in-out';
         ghostEl.style.left = 'calc(100% + 150px)';
         
-        await new Promise(resolve => {
-          const handler = (e) => {
-            if (e.propertyName === 'left') {
-              ghostEl.removeEventListener('transitionend', handler);
-              resolve();
-            }
-          };
-          ghostEl.addEventListener('transitionend', handler);
-        });
+        await delay(2500);
       }
     },
     async onSuccess() {
+      const swipeForward = document.getElementById('swipe-forward-indicator');
+      if (swipeForward) swipeForward.classList.remove('show');
+
       // Re-initialize ghost position outside screen
       const ghostEl = document.getElementById('ghost');
       if (ghostEl) {
@@ -152,25 +125,17 @@ export const ACT3_LEVELS = [
         void ghostEl.offsetWidth; // Reflow
       }
       
-      // Simulate double window split screen by animating browser width
-      const browserEl = document.getElementById('game-browser');
-      browserEl.classList.add('slide-window-out');
-      await delay(500);
-      
-      // Back to normal size but side shifted
-      browserEl.classList.remove('slide-window-out');
-      browserEl.classList.add('slide-window-in');
+      // Removed the slide-window-out/slide-window-in animation here!
       
       browserUI.setTabs([
-        { label: 'Ghost in Your Browser (Clone)', active: true, favicon: 'ghost' },
+        { label: 'Ghost in Your Browser', active: true, favicon: 'ghost' },
       ]);
-      browserUI.setUrl('https://ghost.browser/level3/past');
-      browserUI.setContent(getGibberishHTML(false));
+      browserUI.setUrl('https://ghost.browser/level3/select-operation');
+      browserUI.setContent(wrapSelectPageHTML());
       
-      await delay(550);
-      browserEl.classList.remove('slide-window-in');
+      await delay(300);
       
-      // Materialize ghost in center of new clone window
+      // Materialize ghost in center
       if (ghostEl) {
         const viewport = document.getElementById('game-content-viewport');
         ghost.moveTo(viewport, 'on');
@@ -210,20 +175,13 @@ export const ACT3_LEVELS = [
       if (ghostEl) {
         // Break out of window diagonally to top-right with fading
         ghostEl.style.transition = 'left 1.2s cubic-bezier(0.25, 1, 0.5, 1), top 1.2s cubic-bezier(0.25, 1, 0.5, 1), opacity 1.2s ease-out, filter 1.2s ease-out';
+        void ghostEl.offsetWidth; // Force layout calculation
         ghostEl.style.left = 'calc(100% + 150px)';
         ghostEl.style.top = '-150px';
         ghostEl.style.opacity = '0';
         ghostEl.style.filter = 'blur(10px) brightness(3)';
         
-        await new Promise(resolve => {
-          const handler = (e) => {
-            if (e.propertyName === 'left') {
-              ghostEl.removeEventListener('transitionend', handler);
-              resolve();
-            }
-          };
-          ghostEl.addEventListener('transitionend', handler);
-        });
+        await delay(1200);
       }
     },
     async onSuccess() {
@@ -238,10 +196,10 @@ export const ACT3_LEVELS = [
       browserEl.classList.remove('slide-window-out');
       browserEl.classList.add('slide-window-in');
       browserUI.setTabs([
-        { label: 'New Tab', active: true, favicon: '📄' },
+        { label: 'Ghostgle', active: true, favicon: 'ghost' },
       ]);
-      browserUI.setUrl('https://ghost.browser/level3/past');
-      browserUI.setContent(getGibberishHTML(false));
+      browserUI.setUrl('https://ghostgle.com');
+      browserUI.setContent(getGhostgleHTML());
       
       // Wait for slide-in animation to finish completely before calculations
       await delay(550);
@@ -302,7 +260,7 @@ export const ACT3_LEVELS = [
       // Enter incognito
       browserEl.classList.remove('slide-window-out');
       browserEl.classList.add('slide-window-in');
-      browserEl.classList.add('incognito-mode');
+      browserEl.classList.add('incognito-mode', 'browser-shiver-intense');
       
       // Toggle icons
       document.querySelector('.normal-profile').classList.add('hidden');
@@ -311,14 +269,14 @@ export const ACT3_LEVELS = [
       browserUI.setTabs([
         { label: 'Incognito Tab', active: true, favicon: 'ghost' },
       ]);
-      browserUI.setUrl('https://ghost.browser/level3/past');
-      browserUI.setContent(getGibberishHTML(true));
+      browserUI.setUrl('chrome://incognito/');
+      browserUI.setContent(getIncognitoPageHTML());
       
       // Wait for slide-in animation to finish completely before coordinate calculations
       await delay(550);
       browserEl.classList.remove('slide-window-in');
       void browserEl.offsetWidth; // Force reflow
-      ghost.setState('idle');
+      ghost.setState('panic');
       
       // Materialize back in center surrounded by huge numbers, trapped & shivering
       const ghostEl = document.getElementById('ghost');
@@ -342,7 +300,7 @@ export const ACT3_LEVELS = [
         ghostEl.style.filter = 'none';
         
         // Apply shivering animation
-        ghostEl.classList.add('incognito-shiver');
+        ghostEl.classList.add('ghost-shiver-intense');
       }
     }
   },
@@ -363,7 +321,8 @@ export const ACT3_LEVELS = [
         }
         
         ghost.show();
-        ghostEl.classList.add('incognito-shiver');
+        ghostEl.classList.remove('incognito-shiver');
+        ghostEl.classList.add('ghost-shiver-intense');
       }
     },
     async onSuccess() {
@@ -374,24 +333,24 @@ export const ACT3_LEVELS = [
       await delay(500);
       
       // Exit incognito, back to window 1
-      browserEl.classList.remove('slide-window-out', 'incognito-mode');
+      browserEl.classList.remove('slide-window-out', 'incognito-mode', 'browser-shiver-intense');
       document.querySelector('.normal-profile').classList.remove('hidden');
       document.querySelector('.incognito-profile').classList.add('hidden');
       
       browserEl.classList.add('slide-window-in');
       
       browserUI.setTabs([
-        { label: 'Ghost in Your Browser', active: true, favicon: 'ghost' },
+        { label: 'Ghostgle', active: true, favicon: 'ghost' },
       ]);
-      browserUI.setUrl('https://ghost.browser/level3/past');
-      browserUI.setContent(getGibberishHTML(false));
+      browserUI.setUrl('https://ghostgle.com');
+      browserUI.setContent(getGhostgleHTML());
       
       // Ghost dies in incognito window - hide the ghost completely so it does not appear in the restored window
       const ghostEl = document.getElementById('ghost');
       if (ghostEl) {
         ghostEl.style.transition = 'none';
         ghostEl.style.opacity = '0';
-        ghostEl.classList.remove('incognito-shiver');
+        ghostEl.classList.remove('ghost-shiver-intense', 'incognito-shiver');
         ghost.setState('hidden');
       }
       
