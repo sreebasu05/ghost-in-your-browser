@@ -5,7 +5,7 @@
  * mouse tracking, power bar, and retry phase.
  */
 
-import { getShortcutById, getPlatform, renderCreatureText } from '../data/shortcuts.js';
+import { getShortcutById, getPlatform, renderCreatureText, isArc } from '../data/shortcuts.js';
 import { calculateScore, calculateStars, renderStars } from './scoring.js';
 import * as ghost from './ghost.js';
 import * as browserUI from './browser-ui.js';
@@ -29,6 +29,11 @@ const state = {
   wrongAttempts: 0,
   hintsUsed: 0,
   hintsRevealed: 0,
+
+  // Arc-only: this level's shortcut is reserved by Arc's chrome (⌘T/⌘L),
+  // so the page can't intercept it. When true, the player can press Enter
+  // to bypass the level (the real success animation still plays).
+  arcReservedActive: false,
 
   // Per-act
   actStartTime: 0,
@@ -54,6 +59,7 @@ let challengeText, challengeSubtext, hintBtn, hintLabel, powerBar, powerLabel, l
 let hintOverlay, hintText;
 let devtoolsLogs;
 let mouseSpookedEl;
+let arcNoticeEl;
 
 function cacheDom() {
   challengeText = document.getElementById('challenge-text');
@@ -67,6 +73,7 @@ function cacheDom() {
   hintText = document.getElementById('hint-text');
   devtoolsLogs = document.getElementById('devtools-logs');
   mouseSpookedEl = document.getElementById('mouse-spooked');
+  arcNoticeEl = document.getElementById('arc-notice');
 }
 
 // ==========================================
@@ -197,6 +204,12 @@ function startLevel() {
   hintBtn.disabled = false;
   hintOverlay.classList.add('hidden');
 
+  // Arc reserves ⌘T/⌘L at the chrome level, so those keydowns never reach the
+  // page and the player can't actually solve the level. On Arc only, surface a
+  // notice and let Enter bypass it (full credit — it's Arc's limitation).
+  state.arcReservedActive = isArc() && shortcut.arcReserved === true;
+  showArcNotice(state.arcReservedActive);
+
   // Listen for keys
   if (!state.keyHandler) {
     state.keyHandler = (e) => onKeyDown(e, level);
@@ -228,6 +241,15 @@ function onKeyDown(e, level) {
   if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
     e.preventDefault();
     useHint();
+    return;
+  }
+
+  // Arc-reserved shortcut (⌘T/⌘L): Enter bypasses the level with full credit.
+  // The real shortcut is still accepted below in case the player enabled
+  // "website wins" in Arc, so we only special-case Enter here.
+  if (state.arcReservedActive && e.key === 'Enter') {
+    e.preventDefault();
+    completeArcReserved(level, e);
     return;
   }
 
@@ -372,6 +394,57 @@ async function handleSuccess(level, e) {
 
   state.currentLevelIndex++;
   startLevel();
+}
+
+/**
+ * Bypass an Arc-reserved level (⌘T/⌘L) when the player presses Enter.
+ *
+ * Arc intercepts these shortcuts at the chrome level, so the player can't solve
+ * the level normally — that's not their fault, so we award full credit. We still
+ * run the level's real onSuccess() animation so the fake browser ends up in the
+ * state the NEXT level's setup() expects (a new tab open, address bar focused).
+ */
+async function completeArcReserved(level, e) {
+  if (!state.isActive) return;
+
+  state.isAnimating = true;
+  showArcNotice(false);
+
+  // Full credit — Arc's limitation, not a skill gap.
+  state.results.push({
+    shortcutId: state.currentShortcut.id,
+    score: 100,
+    stars: 3,
+    wrongAttempts: 0,
+    hintsUsed: 0,
+  });
+
+  // Drain power like a normal completion so the bar stays consistent.
+  const powerDrain = Math.ceil(100 / state.levels.length);
+  state.power = Math.max(0, state.power - powerDrain);
+  updatePower();
+
+  const platform = getPlatform();
+  const keysStr = state.currentShortcut.keys[platform].display;
+  logToConsole(keysStr, `${state.currentShortcut.action} (Arc-reserved — auto-resolved)`, 'success');
+
+  if (level.onSuccess) {
+    await level.onSuccess();
+  }
+
+  await delay(500);
+  hintOverlay.classList.add('hidden');
+
+  state.currentLevelIndex++;
+  startLevel();
+}
+
+/**
+ * Show or hide the top-right Arc notice toast.
+ */
+function showArcNotice(show) {
+  if (!arcNoticeEl) return;
+  arcNoticeEl.classList.toggle('hidden', !show);
 }
 
 function handleFail(e) {
@@ -706,6 +779,7 @@ function formatKeyCombo(e) {
 function handleWin() {
   state.isActive = false;
   stopMouseTracking();
+  showArcNotice(false);
   const ghostEl = document.getElementById('ghost');
   if (ghostEl && !ghostEl.className.includes('ghost--hidden') && !ghostEl.className.includes('ghost--captured')) {
     ghost.playCaptured();
