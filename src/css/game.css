@@ -245,6 +245,52 @@
   100% { opacity: 0; transform: translateY(-15px); }
 }
 
+/* --- Arc Reserved-Shortcut Notice (top-right toast) --- */
+.arc-notice {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 60;
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--font-mono);
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  border-radius: 8px;
+  padding: 10px 14px;
+  pointer-events: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+  animation: arc-notice-in 0.3s ease;
+}
+
+.arc-notice.hidden {
+  display: none;
+}
+
+.arc-notice-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-hint);
+}
+
+.arc-notice-body {
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-content-muted);
+}
+
+.arc-notice-body kbd {
+  font-size: 10px;
+  padding: 1px 5px;
+}
+
+@keyframes arc-notice-in {
+  0%   { opacity: 0; transform: translateY(-8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
 /* --- Screen Shake --- */
 .screen-shake {
   animation: shake 0.15s ease;
