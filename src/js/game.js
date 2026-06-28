@@ -710,7 +710,6 @@ function startRetryPhase() {
 
 function startMouseTracking() {
   state.mouseHandler = (e) => {
-    state.mouseAttempts++;
     showMouseSpooked(e.clientX, e.clientY);
   };
   document.addEventListener('mousemove', state.mouseHandler);
@@ -730,6 +729,8 @@ function showMouseSpooked(x, y) {
 
   // Throttle: only show every 2 seconds
   if (mouseSpookedTimeout) return;
+
+  state.mouseAttempts++; // Increment attempt counter only on distinct triggers
 
   mouseSpookedEl.style.left = `${x + 15}px`;
   mouseSpookedEl.style.top = `${y - 10}px`;
