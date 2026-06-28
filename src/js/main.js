@@ -78,6 +78,49 @@ function initStartScreen() {
   checkMobileUserAgent();
 
   document.addEventListener('keydown', handleStartKey);
+
+  // Click handler to scroll down from Page 1 to Page 2
+  const startPrompt = document.querySelector('.start-prompt');
+  if (startPrompt) {
+    startPrompt.style.cursor = 'pointer';
+    startPrompt.onclick = () => {
+      if (currentView !== 'start') return;
+      const page2 = document.getElementById('start-page-2');
+      if (page2) {
+        document.getElementById('view-start').scrollTo({
+          top: page2.offsetTop,
+          behavior: 'smooth'
+        });
+      }
+    };
+  }
+
+  // Click handlers for Act Cards
+  document.querySelectorAll('.act-box').forEach(box => {
+    const act = box.getAttribute('data-act');
+    box.onclick = () => {
+      if (currentView !== 'start') return;
+
+      const actNum = act;
+      let isLocked = false;
+      if (actNum !== '1') {
+        const prevActNum = parseInt(actNum, 10) - 1;
+        const isPrevActCompleted = localStorage.getItem(`ghost-game-act${prevActNum}-completed`) === 'true';
+        if (!isPrevActCompleted) {
+          isLocked = true;
+        }
+      }
+
+      if (isLocked) {
+        box.classList.add('screen-shake');
+        setTimeout(() => box.classList.remove('screen-shake'), 150);
+        return;
+      }
+
+      document.removeEventListener('keydown', handleStartKey);
+      startDisruption('act' + act);
+    };
+  });
 }
 
 function checkMobileUserAgent() {
@@ -165,10 +208,12 @@ function updateActLockStates() {
 
     if (isLocked) {
       box.classList.add('locked');
+      box.style.cursor = 'not-allowed';
       if (instructionEl) {
         instructionEl.innerHTML = 'Locked';
       }
     } else {
+      box.style.cursor = 'pointer';
       if (instructionEl) {
         instructionEl.innerHTML = actShortcuts[act];
       }

@@ -295,8 +295,9 @@ function onKeyDown(e, level) {
         return;
       }
 
-      // If they press a wrong number key (Cmd+1 to Cmd+8)
-      if (e.metaKey || e.ctrlKey) {
+      // If they press a wrong number key (Cmd+1 to Cmd+8 on Mac, Ctrl+1 to Ctrl+8 on Windows)
+      const isTabModifier = platform === 'mac' ? e.metaKey : e.ctrlKey;
+      if (isTabModifier) {
         const num = parseInt(e.key);
         if (num >= 1 && num <= 8) {
           e.preventDefault();

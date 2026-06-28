@@ -238,8 +238,8 @@ export const ACT3_LEVELS = [
   },
   {
     shortcutId: 'incognito',
-    challenge: 'Decouple cache records. Go incognito to reveal its path.',
-    setup() {
+    challenge: 'The ghost is fleeing into an incognito window to wipe its trace. Follow it in private mode!',
+    async setup() {
       const ghostEl = document.getElementById('ghost');
       if (ghostEl) {
         ghostEl.classList.remove('incognito-shiver');
@@ -249,6 +249,16 @@ export const ACT3_LEVELS = [
       
       const content = document.getElementById('view-game');
       ghost.moveTo(content, 'on');
+      
+      // Wait a moment, then fade the ghost out to simulate entering stealth mode
+      await delay(1000);
+      if (ghostEl) {
+        ghostEl.style.transition = 'opacity 1.0s ease-out, filter 1.0s ease-out';
+        ghostEl.style.opacity = '0';
+        ghostEl.style.filter = 'blur(12px) opacity(0)';
+        await delay(1000);
+        ghost.setState('hidden');
+      }
     },
     async onSuccess() {
       await ghost.playHit();
