@@ -48,6 +48,7 @@ export const SHORTCUTS = [
     difficulty: 1,
     frequency: 'daily',
     interceptable: 'simulate',
+    arcReserved: true, // Arc owns ⌘T at the chrome level; the page never sees the event
     keys: {
       mac: { mods: ['meta'], key: 't', display: '⌘ + T' },
       win: { mods: ['ctrl'], key: 't', display: 'Ctrl + T' },
@@ -105,6 +106,7 @@ export const SHORTCUTS = [
     difficulty: 1,
     frequency: 'daily',
     interceptable: 'yes',
+    arcReserved: true, // Arc opens its Command Bar on ⌘L; the page never sees the event
     keys: {
       mac: { mods: ['meta'], key: 'l', display: '⌘ + L' },
       win: { mods: ['ctrl'], key: 'l', display: 'Ctrl + L' },
@@ -717,6 +719,30 @@ export function renderCreatureText(text) {
  */
 export function getPlatform() {
   return navigator.platform?.toLowerCase().includes('mac') ? 'mac' : 'win';
+}
+
+/**
+ * Detect the Arc browser.
+ *
+ * Arc injects a set of `--arc-palette-*` CSS custom properties onto the root
+ * element. No other browser exposes these, so a non-empty value is a reliable
+ * signal. Memoized since the result can't change within a session.
+ *
+ * This matters because Arc reserves some shortcuts (⌘T, ⌘L) at the browser
+ * chrome level — those keydown events never reach the page, so the game can't
+ * intercept them. See `arcReserved` on the affected shortcuts.
+ */
+let _isArc = null;
+export function isArc() {
+  if (_isArc !== null) return _isArc;
+  try {
+    const v = getComputedStyle(document.documentElement)
+      .getPropertyValue('--arc-palette-title');
+    _isArc = v.trim() !== '';
+  } catch {
+    _isArc = false;
+  }
+  return _isArc;
 }
 
 /**
