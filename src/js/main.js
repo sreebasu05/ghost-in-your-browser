@@ -29,7 +29,11 @@ let currentView = 'start';
 
 function showView(name) {
   // Hide cursor during gameplay
-  document.body.style.cursor = (name === 'game') ? 'none' : 'default';
+  if (name === 'game') {
+    document.body.classList.add('game-active');
+  } else {
+    document.body.classList.remove('game-active');
+  }
 
   // Toggle internal browser views
   Object.keys(views).forEach(key => {

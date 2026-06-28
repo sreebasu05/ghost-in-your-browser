@@ -94,6 +94,12 @@ body {
   margin: 0;
 }
 
+/* Hide cursor on all descendants during active gameplay */
+body.game-active,
+body.game-active * {
+  cursor: none !important;
+}
+
 /* Grid background removed — full bleed browser */
 
 /* --- Screen System --- */
